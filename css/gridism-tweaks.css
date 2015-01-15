@@ -1,0 +1,19 @@
+/*
+ * Gridism Tweaks
+ * Custom modifications to gridism for the hacienda landing page
+ */
+
+.grid--centred .unit {
+  margin: 0 auto;
+  float: none;
+}
+
+.grid {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.grid:last-child {
+  border-bottom: 0 solid #fff;
+}
+

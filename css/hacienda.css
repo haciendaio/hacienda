@@ -1,0 +1,127 @@
+/* Custom fonts */
+
+@font-face {
+  font-family: 'PTMonoBold';
+  src: url('../fonts/ptmono/PTM75F_W.eot');
+  src:
+       url('../fonts/ptmono/PTM75F_W.eot?#iefix') format('embedded-opentype'),
+       url('../fonts/ptmono/PTM75F_W.woff') format('woff'),
+       url('../fonts/ptmono/PTM75F_W.ttf') format('truetype'),
+       url('../fonts/ptmono/PTM75F_W.svg#PTMono-Bold') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* typography */
+
+h1 {
+  font-size: 48px;
+  font-weight: normal;
+  font-family: 'PTMonoBold';
+  text-align: center;
+}
+
+@media screen and (max-width: 400px) {
+  h1 {
+    font-size: 28px
+  }
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 20px;
+  font-weight: 100;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 28px;
+  font-family: 'PTMonoBold';
+  font-weight: bold;
+  line-height: 1.2em;
+  margin: 0;
+}
+
+p {
+  line-height: 1.6em;
+}
+
+a {
+  text-decoration: none;
+  color: #46A8C0;
+  font-weight: 700;
+  transition: color 0.2s ease-in;
+}
+
+a:hover, a:focus {
+  color: #E3B706;
+}
+
+/* layout */
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  margin: 20px 0 0;
+}
+
+.logo-image {
+  width: 200px;
+  display: block;
+  margin: 0 auto 20px;
+}
+
+.description {
+  font-size: 14px;
+  text-align: left;
+  line-height: 1.6em
+}
+
+.border-top {
+  border-top: 1px solid;
+  padding-top: 20px;
+}
+
+.logos {
+  text-align: center;
+}
+
+.tech-stack-logo {
+  max-height: 35px;
+  max-width: 100px !important;
+  margin: 10px 20px;
+  vertical-align: middle;
+}
+
+.footer {
+  color: #000;
+  background: #A9CFDA;
+  padding: 20px;
+  text-align: center;
+}
+
+.content-image {
+  border: 1px solid #ddd;
+  max-width: 33% !important;
+  margin: 0 0 20px 20px;
+  float: right;
+}
+
+
+.button {
+  background: #7DB2C2;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 2px;
+  color: #fff;
+  font-weight: normal;
+  font-family: 'PTMonoBold';
+  text-decoration: none;
+  font-size: 12px;
+  transition: background 0.2s ease-in;
+}
+
+.button:hover, .button:focus {
+  background: #E3B706;
+  color: white
+}
