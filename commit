@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+[ -z "$GITHUB_OAUTH_TOKEN" ] && { echo "Env var missing: GITHUB_OAUTH_TOKEN"; exit 1; }
+
+[ -z "$GITHUB_USER" ] && { echo "Env var missing: GITHUB_USER"; exit 1; }
+
+[ -z "$GITHUB_TEST_REPO" ] && { echo "Env var missing: GITHUB_TEST_REPO"; exit 1; }
+
+time bundle install
+time bundle exec rake bootstrap:config_unattended\[$GITHUB_USER,$GITHUB_TEST_REPO\] && bundle exec rake

@@ -1,0 +1,8 @@
+{
+  "id": "draft-only-item",
+  "canonical_language": "en",
+  "available_languages": {
+    "draft": ["en"],
+    "public": []
+  }
+}

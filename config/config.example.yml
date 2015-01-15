@@ -1,0 +1,15 @@
+test:
+  logging: true
+  log_path: /tmp/content_service_test.log
+  content_directory_path: /tmp/test.content
+  key_file: /tmp/content_service/keys_test.yml
+  content_repo: <Github Test Repo>
+  github_user: <Github User>
+
+development:
+  logging: true
+  log_path: /tmp/content_service_dev.log
+  content_directory_path: /tmp/development.content
+  key_file: /tmp/content_service/keys_test.yml
+  content_repo: <Github Development Repo>
+  github_user: <Github User>
