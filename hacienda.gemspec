@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'sinatra', '1.4.3'
   s.add_dependency 'sinatra-contrib', '1.4.1'
-  s.add_dependency 'json', '1.7.7'
+  s.add_dependency 'json', '1.8.2'
   s.add_dependency 'multi_json'
   s.add_dependency 'octokit', '2.5.1'
   s.add_dependency 'rugged', '~> 0.21.0'
