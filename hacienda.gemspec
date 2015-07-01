@@ -1,9 +1,11 @@
 require 'date'
-patch_number = ENV['GO_PIPELINE_COUNTER'] || 0
+require_relative 'util/sem_ver'
+
+include SemVer
 
 Gem::Specification.new do |s|
   s.name        = 'hacienda'
-  s.version     = "0.1.25.#{patch_number}"
+  s.version     = SemVer.version_from_git
   s.date        = Date.today.to_s
   s.summary     = 'Hacienda is a RESTful service to manage content'
   s.description = 'Hacienda is a RESTful service to manage content'
