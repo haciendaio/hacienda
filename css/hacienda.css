@@ -108,8 +108,20 @@ body {
   text-align: center;
 }
 
+.container {
+  position: relative;
+  height: auto;
+  min-height: 100%;
+}
+
+.content {
+  padding-bottom: 120px;
+}
+
 .footer-resources {
-  margin-top: 100px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
 
 .content-image {
