@@ -93,6 +93,14 @@ body {
   vertical-align: middle;
 }
 
+.resources-logo {
+  max-height: 70px;
+  max-width: 200px !important;
+  margin: 10px 120px;
+  vertical-align: middle;
+}
+
+
 .footer {
   color: #000;
   background: #A9CFDA;
