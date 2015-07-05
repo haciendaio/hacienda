@@ -96,7 +96,7 @@ body {
 .resources-logo {
   max-height: 70px;
   max-width: 200px !important;
-  margin: 10px 120px;
+  margin: 10px 30px;
   vertical-align: middle;
 }
 
@@ -106,6 +106,10 @@ body {
   background: #A9CFDA;
   padding: 20px;
   text-align: center;
+}
+
+.footer-resources {
+  margin-top: 130px;
 }
 
 .content-image {
