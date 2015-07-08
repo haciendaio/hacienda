@@ -17,10 +17,18 @@ def settings
   Sinatra::Application.settings
 end
 
-def clone_repo(local_dir, repo_full_name, token)
+def clone_repo(local_dir, repo_full_name, token, safe = true)
+  if safe and Dir.exists? local_dir
+      puts "The folder specified in the content_directory_path: #{local_dir} already exists, please choose another folder to clone the content repo before going further"
+      exit 1
+  end
+
+  if !safe
+    puts "I am removing the #{local_dir} and all its contents!"
+    system("rm -rf #{local_dir}")
+  end
+
   puts 'Cloning master repo...'
-  puts "I am removing the #{local_dir} and all its contents! Tough luck if you have anything of importance there!"
-  system("rm -rf #{local_dir}")
   system("git clone https://#{token}@github.com/#{repo_full_name}.git #{local_dir}")
   puts 'Finished cloning master repo...'
 end
@@ -33,7 +41,7 @@ def create_repo(github_client, repo_name, repo_creation_options)
   sleep 10
 end
 
-def bootstrap_repo(token = ENV['GITHUB_OAUTH_TOKEN'])
+def bootstrap_repo(token = ENV['GITHUB_OAUTH_TOKEN'], safe = true)
 
   repo_name = settings.content_repo
   local_dir = settings.content_directory_path
@@ -46,7 +54,7 @@ def bootstrap_repo(token = ENV['GITHUB_OAUTH_TOKEN'])
 
   repo_exists = github_client.repository?(repo_full_name)
   create_repo(github_client, repo_name, repo_creation_options) unless repo_exists
-  clone_repo(local_dir, repo_full_name, token)
+  clone_repo(local_dir, repo_full_name, token, safe)
 end
 
 def add_webhook_for(repo_full_name, dns_entry)
@@ -140,10 +148,10 @@ namespace :bootstrap do
     end
 
     use_settings_for_env :test
-    bootstrap_repo(github_token)
+    bootstrap_repo(github_token, false)
 
     use_settings_for_env :development
-    bootstrap_repo(github_token)
+    bootstrap_repo(github_token, false)
   end
 
   desc 'Adding webhook for a repo'
