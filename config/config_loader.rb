@@ -15,7 +15,7 @@ module Hacienda
       #Reading the list of environments directly from the config file
       @context.set :environments, environments_read_from_config_file(config_file)
 
-      @context.config_file Pathname.new(File.dirname(__FILE__)).parent.join(config_file).to_s
+      @context.config_file config_file
     end
 
     private
