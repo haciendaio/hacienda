@@ -70,7 +70,8 @@ end
 
 def use_settings_for_env env
   Sinatra::Application.set :environment, env
-  Hacienda::ConfigLoader.new(Sinatra::Application, Sinatra::ConfigFile).load_config_file('config/config.yml')
+  config_file_path = File.expand_path 'config/config.yml'
+  Hacienda::ConfigLoader.new(Sinatra::Application, Sinatra::ConfigFile).load_config_file(config_file_path)
 end
 
 def bootstrap_for_env env
@@ -93,9 +94,9 @@ namespace :bootstrap do
 
     puts 'What is the Github test repo (it will create if not existent):'
     github_test_repo = STDIN.gets.chomp
-   
+
     puts 'What is the Github development repo (it will create if not existent):'
-    github_development_repo = STDIN.gets.chomp    
+    github_development_repo = STDIN.gets.chomp
 
     config_content = IO.read('config/config.example.yml')
 
@@ -109,7 +110,7 @@ namespace :bootstrap do
 
     use_settings_for_env :test
     bootstrap_repo(github_token)
- 
+
     use_settings_for_env :development
     bootstrap_repo(github_token)
   end
@@ -174,7 +175,7 @@ namespace :bootstrap do
   desc 'Setting up the development repo'
   task :dev_repo do
     bootstrap_for_env :development
-  end  
+  end
 
   desc 'Generating keys for clients'
   task :generate_id_and_secret do
@@ -211,4 +212,3 @@ namespace :bootstrap do
   end
 
 end
-
