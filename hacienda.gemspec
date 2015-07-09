@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date        = Date.today.to_s
   s.summary     = 'Hacienda is a RESTful service to manage content'
   s.description = 'Hacienda is a RESTful service to manage content'
-  s.authors     = ['Thougthworks']
+  s.authors     = ['Thoughtworks']
   s.email       = 'www-devs@thoughtworks.com'
   s.files       = %w(lib/hacienda_service.rb lib/hacienda/tasks.rb lib/hacienda/test_support.rb config/config_loader.rb) + Dir['app/**/*.rb'] +  Dir['spec/**/*.rb'] + Dir['rake/tasks/*']
   s.homepage    =
