@@ -17,14 +17,14 @@ module Hacienda
       queries = extract_queries
 
       is_and = @query_option_value.include? 'and'
+      method = is_and ? '&' : '|'
+
       content_items.find_all do |content_item|
         query_results = queries.map  do |query|
           query.is_satisfied_by?(content_item)
         end
 
-        query_results.reduce(is_and) do |start_value, query_result|
-          is_and ? start_value.&(query_result) : start_value.|(query_result)
-        end
+        query_results.reduce(is_and) { |start_value, query_result| start_value.send(method, query_result)}
       end
 
     end
