@@ -33,15 +33,18 @@ module Hacienda
         expect(items[0].keys).to match_array [ :id, :colour, :shape, :translated_locale, :last_modified, :last_modified_by]
       end
 
-      it 'should include items which match a date filter' do
+      it 'should include items which match one of the filters in or' do
         content_item = {id: 'banana1', colour: 'Yellow', shape: 'bent', date: '25/01/2014'}
+        blue_content_item = {id: 'banana2', colour: 'Blue', shape: 'bent', date: '25/01/2014'}
         test_content_manager.add_item('public', 'en', 'fruit', 'banana1', content_item, default_metadata)
+        test_content_manager.add_item('public', 'en', 'fruit', 'banana2', blue_content_item, default_metadata)
 
-        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24' and tolower colour eq 'yellow'")
+        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24' or tolower(colour) eq 'blue'")
         expect(items.first).to include content_item
+        expect(items[1]).to include blue_content_item
       end
 
-      it 'should not include items which do not match a date filter' do
+      it 'should not include items which do not match all the filters in and' do
         matched_content_item = {id: 'banana1', colour: 'Yellow', shape: 'bent', date: '25/01/2014'}
         unmatched_content_item = {id: 'apple', colour: 'Green', shape: 'round', date: '23/01/2014'}
 
