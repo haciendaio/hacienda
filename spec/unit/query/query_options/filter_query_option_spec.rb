@@ -27,6 +27,42 @@ module Hacienda
 
       end
 
+      context 'has an and' do
+        it 'should keep the content items that satisfy all filters' do
+          content_items =  [ { content: '"Hello"'} ]
+          query_option = 'a_true_filter and another_true_filter'
+
+          true_filter = double('filter', is_satisfied_by?: true)
+
+          filter_factory.stub(:get_individual_filter).with('a_true_filter').and_return(true_filter)
+          filter_factory.stub(:get_individual_filter).with('another_true_filter').and_return(true_filter)
+
+          filters = FilterQueryOption.new(query_option, filter_factory)
+
+          filtered_content_items = filters.apply(content_items)
+
+          expect(filtered_content_items.size).to eq 1
+        end
+
+        it 'should filter out the content items that fail one of the filters' do
+          content_items =  [ { content: '"Hello"'} ]
+          query_option = 'true_filter and false_filter'
+
+          true_filter = double('filter', is_satisfied_by?: true)
+          false_filter = double('filter', is_satisfied_by?: false)
+
+          filter_factory.stub(:get_individual_filter).with('true_filter').and_return(true_filter)
+          filter_factory.stub(:get_individual_filter).with('false_filter').and_return(false_filter)
+
+          filters = FilterQueryOption.new(query_option, filter_factory)
+
+          filtered_content_items = filters.apply(content_items)
+
+          expect(filtered_content_items.size).to eq 0
+        end
+      end
+
+
 
     end
   end
