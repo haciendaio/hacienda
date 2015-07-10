@@ -37,7 +37,7 @@ module Hacienda
         content_item = {id: 'banana1', colour: 'Yellow', shape: 'bent', date: '25/01/2014'}
         test_content_manager.add_item('public', 'en', 'fruit', 'banana1', content_item, default_metadata)
 
-        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24'")
+        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24' and tolower colour eq 'yellow'")
         expect(items.first).to include content_item
       end
 
@@ -48,7 +48,7 @@ module Hacienda
         test_content_manager.add_item('public', 'en', 'fruit', 'banana1', matched_content_item, default_metadata)
         test_content_manager.add_item('public', 'en', 'fruit', 'apple', unmatched_content_item, default_metadata)
 
-        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24'")
+        items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24' and date lt datetime'2014-01-26'")
         expect(items.length).to be 1
       end
 

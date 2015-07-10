@@ -62,7 +62,40 @@ module Hacienda
         end
       end
 
+      context 'has an or' do
+        it 'should keep the content items that satisfy one of filters' do
+          content_items =  [ { content: '"Hello"'} ]
+          query_option = 'true_filter or false_filter'
 
+          true_filter = double('filter', is_satisfied_by?: true)
+          false_filter = double('filter', is_satisfied_by?: false)
+
+          filter_factory.stub(:get_individual_filter).with('true_filter').and_return(true_filter)
+          filter_factory.stub(:get_individual_filter).with('false_filter').and_return(false_filter)
+
+          filters = FilterQueryOption.new(query_option, filter_factory)
+
+          filtered_content_items = filters.apply(content_items)
+
+          expect(filtered_content_items.size).to eq 1
+        end
+
+        it 'should filter out the content items that satisfy one of filters' do
+          content_items =  [ { content: '"Hello"'} ]
+          query_option = 'false_filter or false_filter'
+
+          false_filter = double('filter', is_satisfied_by?: false)
+
+          filter_factory.stub(:get_individual_filter).with('true_filter').and_return(false_filter)
+          filter_factory.stub(:get_individual_filter).with('false_filter').and_return(false_filter)
+
+          filters = FilterQueryOption.new(query_option, filter_factory)
+
+          filtered_content_items = filters.apply(content_items)
+
+          expect(filtered_content_items.size).to eq 0
+        end
+      end
 
     end
   end

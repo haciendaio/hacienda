@@ -16,8 +16,15 @@ module Hacienda
     def apply(content_items)
       queries = extract_queries
 
+      is_and = @query_option_value.include? 'and'
       content_items.find_all do |content_item|
-        queries.all? { |query| query.is_satisfied_by?(content_item) }
+        query_results = queries.map  do |query|
+          query.is_satisfied_by?(content_item)
+        end
+
+        query_results.reduce(is_and) do |start_value, query_result|
+          is_and ? start_value.&(query_result) : start_value.|(query_result)
+        end
       end
 
     end
@@ -25,8 +32,8 @@ module Hacienda
     private
 
     def extract_queries
-      query_items = @query_option_value.split(/\s(and)\s/)
-      queries = query_items.select.each_with_index { |str, i| i.even? }
+      query_items = @query_option_value.split(/\s(and|or)\s/)
+      queries = query_items.select.each_with_index { |_, i| i.even? }
       return queries.collect { |query| @filter_factory.get_individual_filter(query) }
     end
 
