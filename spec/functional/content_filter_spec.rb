@@ -40,8 +40,9 @@ module Hacienda
         test_content_manager.add_item('public', 'en', 'fruit', 'banana2', blue_content_item, default_metadata)
 
         items = get_public_items('fruit','en',"$filter=date gt datetime'2014-01-24' or tolower(colour) eq 'blue'")
-        expect(items.first).to include content_item
-        expect(items[1]).to include blue_content_item
+        expect(items.map { |item|
+          item[:id]
+        }).to match_array %w(banana1 banana2)
       end
 
       it 'should not include items which do not match all the filters in and' do
