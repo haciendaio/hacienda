@@ -90,6 +90,11 @@ module Hacienda
       draft_content_store.find_one(params[:type], params[:id], get_accept_language).to_json
     end
 
+    get %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$} do
+      changes_in_the_past = (-1)*request.env['rack.request.query_hash']['v'].to_i
+      draft_content_store.find_locale_resource(params[:type], params[:id], params[:locale], changes_in_the_past)
+    end
+
     #Delete
 
     delete %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$} do
@@ -116,7 +121,9 @@ module Hacienda
     end
 
     def get_accept_language
-      request.env['HTTP_ACCEPT_LANGUAGE']
+      accepted_values = ['en','es','pt','de']
+      passed_locale = request.env['HTTP_ACCEPT_LANGUAGE']
+      accepted_values.include?(passed_locale) ? passed_locale : 'en'
     end
 
     def sinatra_response(service_http_response)

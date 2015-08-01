@@ -1,6 +1,9 @@
 require_relative '../../app/utilities/execution_time_logger'
 require_relative '../../app/utilities/shell_executor'
 require_relative '../../app/utilities/log'
+require_relative '../../app/exceptions/not_found_exception'
+
+require 'rugged'
 
 module Hacienda
   class LocalGitRepo
@@ -36,6 +39,35 @@ module Hacienda
 
       end
     end
+
+    def get_version_for_file_at(file_path, changes_in_the_past)
+      blob = history_for_file(file_path, changes_in_the_past)
+      raise FileNotFoundError.new(file_path) unless blob
+      blob.text
+    end
+
+    def history_for_file(file_path, changes_in_the_past)
+      repo = Rugged::Repository.new(@data_dir)
+      walker = Rugged::Walker.new(repo)
+      walker.push(repo.last_commit)
+
+      last_blob = repo.blob_at(repo.last_commit.oid, file_path)
+      current_blob_id = last_blob.oid
+
+      walker.each do |commit|
+        blob = repo.blob_at(commit.oid, file_path)
+        blob_id = (blob ? blob.oid : 0)
+
+        if current_blob_id != blob_id
+          current_blob_id = blob_id
+          last_blob = blob
+          changes_in_the_past -= 1
+        end
+        break if (changes_in_the_past == 0)
+        break unless last_blob
+      end
+    end
+
 
     private
 

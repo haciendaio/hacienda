@@ -34,11 +34,11 @@ module Hacienda
     end
 
     def draft_content_store
-      ContentStore.new(:draft, query(request.env['rack.request.query_hash']), content_handlers, content_file_store, log)
+      ContentStore.new(:draft, query(request.env['rack.request.query_hash']), content_handlers, content_file_store, log, local_content_repo)
     end
 
     def public_content_store
-      ContentStore.new(:public, query(request.env['rack.request.query_hash']), content_handlers, content_file_store, log)
+      ContentStore.new(:public, query(request.env['rack.request.query_hash']), content_handlers, content_file_store, log, local_content_repo)
     end
 
     def github

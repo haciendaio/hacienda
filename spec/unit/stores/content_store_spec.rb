@@ -13,9 +13,10 @@ module Hacienda
       let(:handlers) { [double('FirstHandler', process!: nil), double('SecondHandler', process!: nil)] }
       let(:file_data_store) { double('FileDataStore', find_all_ids: [], get_data_for_id: nil) }
       let(:translation_store) { double('TranslationStore', get_translation_for: '') }
+      let(:git_local_store) { double('LocalGitStore') }
       let(:query) { double('QueryRunner', apply: 'filtered content') }
 
-      subject { ContentStore.new(:draft, query, handlers, file_data_store, log, translation_store) }
+      subject { ContentStore.new(:draft, query, handlers, file_data_store, log, git_local_store, translation_store) }
 
       context 'Finding specific item' do
 
