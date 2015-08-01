@@ -148,8 +148,8 @@ module Hacienda
 
           github_tells_service_that_content_updated.body.should eq 'content updated'
 
-          expect(get_draft_response_status_code_for(type, id, 'en')).to eq 404
-          expect(get_public_response_status_code_for(type, id, 'en')).to eq 404
+          expect(get_draft_translated_response_status_code_for(type, id, 'en')).to eq 404
+          expect(get_public_translated_response_status_code_for(type, id, 'en')).to eq 404
 
           response = delete_item_with_locale(type, id, authorised_client_data, 'en')
           expect(response.status).to eq 404

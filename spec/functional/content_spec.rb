@@ -26,7 +26,7 @@ module Hacienda
       let(:default_metadata) { MetadataBuilder.new.default.build }
 
       it 'should return a 404 status code for non-existent content item' do
-        status_code = get_draft_response_status_code_for('penguin', 'obviously-non-existent-item', 'en')
+        status_code = get_draft_translated_response_status_code_for('penguin', 'obviously-non-existent-item', 'en')
         status_code.should eq 404
       end
 

@@ -86,14 +86,6 @@ module Hacienda
         client.post '/content-updated', data: '{}'
       end
 
-      def get_draft_response_status_code_for(type, id, locale)
-        get_response_status_from_path("/#{type}/#{id}/#{locale}")
-      end
-
-      def get_public_response_status_code_for(type, id, locale)
-        get_response_status_from_path("/#{type}/#{id}/#{locale}/public")
-      end
-
       def get_public_translated_response_status_code_for(type, id, locale)
         get_response_status_from_path("/#{type}/#{id}/public", set_accept_language(locale))
       end

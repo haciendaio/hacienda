@@ -117,9 +117,6 @@ module Hacienda
         expect(response.status).to eq 204
         content_updated
 
-        expect(get_draft_response_status_code_for(type, bananarama_id, 'es')).to eq 404
-        expect(get_public_response_status_code_for(type, bananarama_id, 'es')).to eq 404
-
         expect(get_public_translated_response_status_code_for(type, bananarama_id, 'es')).to eq 404
       end
 
@@ -137,7 +134,6 @@ module Hacienda
 
         content_updated
 
-        expect(get_draft_response_status_code_for(type, bananarama_id, 'en')).to eq 404
         expect(get_draft_translated_response_status_code_for(type, bananarama_id, 'en')).to eq 200
       end
     end
