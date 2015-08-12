@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'lib', 'hacienda_service')
 
-config_file = Pathname.new(File.dirname(__FILE__)).join('config/config.yml').to_s
+config_file = File.expand_path('config/config.yml', File.dirname(__FILE__))
 
 Hacienda::HaciendaService.load_config_file config_file
 
