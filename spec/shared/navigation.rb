@@ -24,6 +24,10 @@ module Hacienda
         get_json_from_path("/#{type}", '', set_accept_language(locale))
       end
 
+      def get_draft_item_version(type, id, locale, versions_in_the_past)
+        get_json_from_path("/#{type}/#{id}/#{locale}","v=-#{versions_in_the_past}")
+      end
+
       def get_public_translated_item_by_id(type, id, locale)
         get_json_from_path("/#{type}/#{id}/public", '', set_accept_language(locale))
       end

@@ -90,9 +90,12 @@ module Hacienda
       draft_content_store.find_one(params[:type], params[:id], get_accept_language).to_json
     end
 
+    #Getting history of an item
+
     get %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$} do
+      type, id, locale = params[:captures]
       changes_in_the_past = (-1)*request.env['rack.request.query_hash']['v'].to_i
-      draft_content_store.find_locale_resource(params[:type], params[:id], params[:locale], changes_in_the_past)
+      draft_content_store.find_locale_resource(type, id, locale, changes_in_the_past)
     end
 
     #Delete

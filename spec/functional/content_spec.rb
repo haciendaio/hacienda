@@ -231,6 +231,33 @@ module Hacienda
         end
       end
 
+      describe 'history of items' do
+        let (:test_content_manager) { TestContentManager.new(TEST_REPO)}
+
+        it 'should retrieve one version in the past' do
+          first_cat_item = {id: 'cat', title:'cat number one', last_modified: DateTime.new(2000, 1, 1).to_s, last_modified_by: 'author'}
+          second_cat_item = {id: 'cat', title:'cat number two', last_modified: DateTime.new(2000, 1, 1).to_s, last_modified_by: 'author'}
+          third_cat_item = {id: 'cat', title:'cat number three', last_modified: DateTime.new(2000, 1, 1).to_s, last_modified_by: 'author'}
+          default_cat_metadata =  MetadataBuilder.new
+          .with_id('cat')
+          .with_canonical('cn')
+          .with_draft_languages('cn')
+          .with_public_languages('cn')
+          .with_last_modified('cn', DateTime.new(2000, 1, 1))
+          .with_last_modified_by('cn', 'author')
+          .build
+
+          test_content_manager.add_item('draft', 'cn', 'animal', 'cat', first_cat_item, default_cat_metadata)
+          test_content_manager.add_item('draft', 'cn', 'animal', 'cat', second_cat_item, default_cat_metadata)
+          test_content_manager.add_item('draft', 'cn', 'animal', 'cat', third_cat_item, default_cat_metadata)
+
+          item = get_draft_item_version('animal', 'cat', 'cn', 1)
+
+          expect(item[:title]).to eq 'cat number two'
+        end
+
+      end
+
       def clean_returned_json(item)
         item.reject! do |key, value|
           key == :status or key == :version

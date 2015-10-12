@@ -66,6 +66,8 @@ module Hacienda
         break if (changes_in_the_past == 0)
         break unless last_blob
       end
+
+      last_blob
     end
 
 
