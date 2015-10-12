@@ -1,4 +1,4 @@
-[![Build Status](https://snap-ci.com/www-thoughtworks-com/hacienda/branch/master/build_image)](https://snap-ci.com/www-thoughtworks-com/hacienda/branch/master)
+[![Build Status](https://snap-ci.com/haciendaio/hacienda/branch/master/build_image)](https://snap-ci.com/haciendaio/hacienda/branch/master)
 # Hacienda
 Hacienda is a small RESTful service built to manage content and its translations stored as JSON
 
