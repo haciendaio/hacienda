@@ -5,6 +5,7 @@ module Hacienda
 
       def initialize(repo_path)
         super(repo_path)
+        @repo = get_repo
       end
 
       def self.init_git_repo(repo_path)
