@@ -22,11 +22,15 @@ module Hacienda
       Repository.new(@repo_path)
     end
 
+    def get_wrapper_for_repo repo
+      Rugged::Walker.new(repo)
+    end
+
     def sha_for(item_path)
       get_repo.head.target.tree.path(item_path)[:oid]
     end
 
-    def get_version_in_past(file_path, changes_in_the_past, repo = get_repo, walker = Rugged::Walker.new(repo))
+    def get_version_in_past(file_path, changes_in_the_past, repo = get_repo, walker = get_wrapper_for_repo(repo))
       raise ArgumentError if changes_in_the_past < 0
       walker.push(repo.last_commit)
 
