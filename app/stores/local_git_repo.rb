@@ -42,15 +42,10 @@ module Hacienda
     end
 
     def get_version_for_file_at(file_path, changes_in_the_past)
-      blob = history_for_file(file_path, changes_in_the_past)
+      blob = RuggedWrapperFactory.new.get_repo(@data_dir).get_version_in_past(file_path, changes_in_the_past)
       raise FileNotFoundError.new(file_path) unless blob
       blob.text
     end
-
-    def history_for_file(file_path, changes_in_the_past)
-      RuggedWrapperFactory.new.get_repo(@data_dir).get_version_in_past(file_path, changes_in_the_past)
-    end
-
 
     private
 
