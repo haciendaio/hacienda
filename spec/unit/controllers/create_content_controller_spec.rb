@@ -20,8 +20,8 @@ module Hacienda
 
         subject.create('news', item_json, 'cn', 'some author')
 
-        expect(github).to have_received(:create_content).with('draft/cn/news/item-id-content-body.html', '<p>body</p>', anything)
-        expect(github).to have_received(:create_content).with('draft/cn/news/item-id.json', processed_json, anything)
+        expect(github).to have_received(:create_content).with(anything, 'draft/cn/news/item-id-content-body.html' => '<p>body</p>')
+        expect(github).to have_received(:create_content).with(anything, 'draft/cn/news/item-id.json' => processed_json)
       end
 
       it 'should return a 409 if content exists' do
@@ -40,14 +40,14 @@ module Hacienda
         metadata = MetadataFactory.new.create('an_id', 'pt', datetime, 'some author')
 
         subject.create('news', {id: 'an_id'}.to_json, 'pt', 'some author')
-        expect(github).to have_received(:create_content).with('metadata/news/an_id.json', metadata.to_json, anything)
+        expect(github).to have_received(:create_content).with(anything, 'metadata/news/an_id.json' => metadata.to_json)
       end
 
       describe 'response' do
 
         it 'should return the version of the created file' do
-          github.stub(:create_content).with('draft/en/news/item-id-content-body.html', anything, anything).and_return(double(sha: 'html_v1'))
-          github.stub(:create_content).with('draft/en/news/item-id.json', anything, anything).and_return(double(sha: 'json_v1'))
+          github.stub(:create_content).with(anything, 'draft/en/news/item-id-content-body.html' => anything).and_return(double(sha: 'html_v1'))
+          github.stub(:create_content).with(anything, 'draft/en/news/item-id.json' => anything).and_return(double(sha: 'json_v1'))
 
           content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('a_version')
 
@@ -72,7 +72,7 @@ module Hacienda
         end
 
         it 'return a draft version and a nil public version' do
-          github.stub(:create_content).with('draft/en/news/new-id-for-create.json', anything, anything).and_return(double(sha: 'json_v1'))
+          github.stub(:create_content).with(anything, 'draft/en/news/new-id-for-create.json' => anything).and_return(double(sha: 'json_v1'))
           content_digest.stub(:generate_digest).with(%w(json_v1)).and_return('a_version')
 
           result = subject.create('news', {id: 'new-id-for-create'}.to_json, 'en', 'some author')

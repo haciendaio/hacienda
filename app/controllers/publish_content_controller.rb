@@ -54,7 +54,7 @@ module Hacienda
       metadata = @metadata_factory.from(get_metadata(metadata_path))
       metadata.add_public_language(locale) unless metadata.has_public_language?(locale)
 
-      @github.create_content(metadata_path, metadata.to_json, GENERIC_METADATA_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)
     end
 
     def get_metadata(metadata_path)
@@ -95,7 +95,7 @@ module Hacienda
     end
 
     def publish_file_to_github(id, content, target_file_path)
-      @github.create_content(target_file_path, content, GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, target_file_path => content)
     end
 
   end

@@ -41,7 +41,7 @@ module Hacienda
     private
 
     def update_content(author, content, id, locale, metadata_path, type)
-      updated_draft_version = get_draft_version(content, locale, type)
+      updated_draft_version = update_draft(content, locale, type)
       update_metadata(locale, metadata_path, author)
 
       response = ServiceHttpResponseFactory.ok_response({
@@ -65,7 +65,7 @@ module Hacienda
       end
     end
 
-    def get_draft_version(content, locale, type)
+    def update_draft(content, locale, type)
       sha_of_referenced_files = content.referenced_files.collect { |item| update_html_file(item, type, locale).sha }
       json_file_sha = update_json_file(content, type, locale).sha
       @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
@@ -73,12 +73,12 @@ module Hacienda
 
     def update_json_file(content, type, locale)
       content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
-      @github.create_content(content_item_path, content.data.to_json, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content_item_path => content.data.to_json)
     end
 
     def update_html_file(item, type, locale)
       html_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(html_path, item.value, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value)
     end
 
     def update_metadata(locale, metadata_path, author)
@@ -86,7 +86,7 @@ module Hacienda
       metadata.add_draft_language(locale) unless metadata.has_draft_language?(locale)
       metadata.update_last_modified(locale, DateTime.now)
       metadata.update_last_modified_by(locale, author)
-      @github.create_content(metadata_path, metadata.to_json, GENERIC_METADATA_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)
     end
 
     def get_metadata(metadata_path)

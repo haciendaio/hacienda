@@ -26,7 +26,8 @@ module Hacienda
       @github_client = github_client
     end
 
-    def create_content(path, content, commit_message = '')
+    def create_content(commit_message, items = {})
+      content, path = path_and_content(items)
 
       content_reference = @github_client.create_blob(content)
 
@@ -107,6 +108,14 @@ module Hacienda
       base_tree_reference = @github_client.get_tree(head_reference)
       tree_reference = @github_client.create_tree(base_tree_reference, content_reference, path)
       @github_client.create_commit(head_reference, tree_reference, commit_message)
+    end
+
+    def path_and_content(items)
+      raise "Cannot create content items, since can only cope with 1 item at moment: #{items}" unless items.keys.size == 1
+
+      path = items.keys.first
+      content = items[path]
+      return content, path
     end
   end
 end

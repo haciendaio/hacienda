@@ -77,7 +77,7 @@ module Hacienda
           delete_content_controller.delete(id, type, 'pt')
 
           expect(metadata).to have_received(:remove_for_locale).with('pt')
-          expect(github).to have_received(:create_content).with(metadata_path, 'some json representation', 'Updated metadata file')
+          expect(github).to have_received(:create_content).with('Updated metadata file', metadata_path => 'some json representation')
         end
 
         it 'should set the response code to 404 when there is no item in draft or public' do

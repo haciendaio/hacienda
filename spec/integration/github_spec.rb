@@ -14,7 +14,7 @@ module Hacienda
       it 'should delete stuff' do
         github = Github.new(settings)
 
-        github.create_content('black/white/cat.txt', 'Postman Pat', 'Committed...')
+        github.create_content('Committed...', 'black/white/cat.txt' => 'Postman Pat')
         github.delete_content('black/white/cat.txt', 'Deleted')
 
       end
@@ -28,7 +28,7 @@ module Hacienda
             ENV.delete 'GITHUB_OAUTH_TOKEN'
 
             expect {
-              Github.new(settings).create_content('whatever', 'something', '...')
+              Github.new(settings).create_content('...', 'whatever' => 'something')
             }.to raise_error { |error|
               expect(error.message).to include 'GITHUB_OAUTH_TOKEN'
             }

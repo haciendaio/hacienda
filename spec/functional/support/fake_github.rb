@@ -14,7 +14,9 @@ module Hacienda
         TestRuggedWrapper.init_git_repo(content_directory_path)
       end
 
-      def create_content(path, content, commit_message = '')
+      def create_content(commit_message, items)
+        path = items.keys.first
+        content = items[path]
         log 'create_content', path
         open(full_path(path), 'w+') { |file| file.write content }
 

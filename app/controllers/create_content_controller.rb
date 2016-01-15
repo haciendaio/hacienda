@@ -62,16 +62,16 @@ module Hacienda
 
     def create_metadata_file(content, locale, path, author)
       metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
-      @github.create_content(path, metadata.to_json, GENERIC_METADATA_CREATED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_METADATA_CREATED_COMMIT_MESSAGE, path => metadata.to_json)
     end
 
     def create_json_file(data_hash, path)
-      @github.create_content(path, data_hash.to_json, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, path => data_hash.to_json)
     end
 
     def create_html_file(item, type, locale)
       file_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(file_path, item.value, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
+      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, file_path => item.value)
     end
 
   end

@@ -40,7 +40,7 @@ module Hacienda
 
         it 'should publish all referenced html files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with('public/es/teas/tea-id-earl-grey.html', 'Earl Grey', anything)
+          expect(github).to have_received(:create_content).with(anything, 'public/es/teas/tea-id-earl-grey.html' => 'Earl Grey')
         end
 
         it 'should return a draft version and a public version with the same sha' do
@@ -57,7 +57,7 @@ module Hacienda
 
         it 'should update the metadata when it publishes files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with('metadata/teas/tea-id.json', metadata.add_public_language('es').to_json, anything)
+          expect(github).to have_received(:create_content).with(anything, 'metadata/teas/tea-id.json' => metadata.add_public_language('es').to_json)
         end
 
         it 'should not add the public language if it already exists in the metadata' do
@@ -65,7 +65,7 @@ module Hacienda
           github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata_file', content: metadata.to_json))
 
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with('metadata/teas/tea-id.json', metadata.to_json, anything)
+          expect(github).to have_received(:create_content).with(anything, 'metadata/teas/tea-id.json' => metadata.to_json)
         end
 
       end

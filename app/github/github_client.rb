@@ -50,6 +50,7 @@ module Hacienda
     def delete_content(path, sha, message)
       @octokit_client.delete_contents(content_repo, path, message, sha)
     end
+
     private
 
     def content_repo

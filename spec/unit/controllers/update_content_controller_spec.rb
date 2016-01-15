@@ -41,13 +41,13 @@ module Hacienda
 
           subject.update('mammal', 'reindeer', new_content, 'es', 'new author')
 
-          expect(github).to have_received(:create_content).with('metadata/mammal/reindeer.json', anything, anything)
-          expect(github).to have_received(:create_content).with('draft/es/mammal/reindeer-prancer.html', 'antler', anything)
-          expect(github).to have_received(:create_content).with('draft/es/mammal/reindeer.json', {
+          expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => anything)
+          expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer-prancer.html' => 'antler')
+          expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer.json' => {
               'id' => 'reindeer',
               'type' => 'mammal',
               'prancer_ref' => 'reindeer-prancer.html'
-          }.to_json, anything)
+          }.to_json)
       end
 
       it 'should update content and metadata when locale does not exist' do
@@ -70,13 +70,13 @@ module Hacienda
             .with_last_modified_by('es', 'new author')
             .build
 
-        expect(github).to have_received(:create_content).with('metadata/mammal/reindeer.json', expected_metadata.to_json, anything)
-        expect(github).to have_received(:create_content).with('draft/es/mammal/reindeer-prancer.html', 'antler', anything)
-        expect(github).to have_received(:create_content).with('draft/es/mammal/reindeer.json', {
+        expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => expected_metadata.to_json)
+        expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer-prancer.html' => 'antler')
+        expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer.json' => {
             'id' => 'reindeer',
             'type' => 'mammal',
             'prancer_ref' => 'reindeer-prancer.html'
-        }.to_json, anything)
+        }.to_json)
       end
 
       it 'should return a 404 when no metadata for content' do
@@ -147,7 +147,7 @@ module Hacienda
             .with_draft_languages('en')
             .with_last_modified('en', new_datetime)
             .with_last_modified_by('en', 'some author')
-        expect(github).to have_received(:create_content).with('metadata/mammal/reindeer.json', expected_metadata.build.to_json, anything)
+        expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => expected_metadata.build.to_json)
       end
 
       def parse_json(json)

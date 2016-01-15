@@ -3,6 +3,7 @@ require_relative '../services/file_path_provider'
 require_relative '../utilities/log'
 require_relative '../utilities/file_system_wrapper'
 require_relative '../utilities/shell_executor'
+require_relative '../github/logging_github_client'
 require_relative '../github/github_client'
 require_relative '../github/github'
 require_relative '../lib/content_digest'
@@ -42,7 +43,15 @@ module Hacienda
     end
 
     def github
-      Github.new(settings)
+      Github.new(settings, logging_github_client)
+    end
+
+    def logging_github_client
+      LoggingGithubClient.new github_client, log
+    end
+
+    def github_client
+      GithubClient.new settings
     end
 
     def publish_content_controller
