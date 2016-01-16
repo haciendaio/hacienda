@@ -10,7 +10,7 @@ module Hacienda
     describe CreateContentController do
 
       let(:content_digest) { double('content_digest', generate_digest: 'version') }
-      let(:github) { double('github', create_content: double(sha: 'version'), content_exists?: false) }
+      let(:github) { double('github', create_content: { 'path' => double(sha: 'version')}, content_exists?: false) }
 
       subject { CreateContentController.new(github, content_digest) }
 
@@ -46,8 +46,8 @@ module Hacienda
       describe 'response' do
 
         it 'should return the version of the created file' do
-          github.stub(:create_content).with(anything, 'draft/en/news/item-id-content-body.html' => anything).and_return(double(sha: 'html_v1'))
-          github.stub(:create_content).with(anything, 'draft/en/news/item-id.json' => anything).and_return(double(sha: 'json_v1'))
+          github.stub(:create_content).with(anything, 'draft/en/news/item-id-content-body.html' => anything).and_return({ 'draft/en/news/item-id-content-body.html' => double(sha: 'html_v1')})
+          github.stub(:create_content).with(anything, 'draft/en/news/item-id.json' => anything).and_return({'draft/en/news/item-id.json' => double(sha: 'json_v1')})
 
           content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('a_version')
 
@@ -72,7 +72,7 @@ module Hacienda
         end
 
         it 'return a draft version and a nil public version' do
-          github.stub(:create_content).with(anything, 'draft/en/news/new-id-for-create.json' => anything).and_return(double(sha: 'json_v1'))
+          github.stub(:create_content).with(anything, 'draft/en/news/new-id-for-create.json' => anything).and_return('draft/en/news/new-id-for-create.json' => double(sha: 'json_v1'))
           content_digest.stub(:generate_digest).with(%w(json_v1)).and_return('a_version')
 
           result = subject.create('news', {id: 'new-id-for-create'}.to_json, 'en', 'some author')

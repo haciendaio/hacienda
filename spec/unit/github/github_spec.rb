@@ -49,8 +49,11 @@ module Hacienda
 
         it 'should return a new git file' do
           github_client.stub(:create_blob).and_return('sha1')
-          file = github.create_content('Commit message', 'path' => 'content')
+          files = github.create_content('Commit message', 'path' => 'content')
 
+          file = files['path']
+
+          expect(files.keys.size).to eq 1
           expect(file.path).to eq('path')
           expect(file.content).to eq('content')
           expect(file.sha).to eq 'sha1'

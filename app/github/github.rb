@@ -38,7 +38,7 @@ module Hacienda
 
           @github_client.update_head_ref_to(commit_reference)
 
-          GitFile.new(content, path, content_reference)
+          { path => GitFile.new(content, path, content_reference) }
         end
       end
     end

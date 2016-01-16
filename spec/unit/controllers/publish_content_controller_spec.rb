@@ -13,7 +13,7 @@ module Hacienda
 
     describe PublishContentController do
 
-      let(:github) { double('github', create_content: nil, update_content: nil, content_exists?: true, get_content: nil) }
+      let(:github) { double('github', create_content: {'' => {}}, update_content: nil, content_exists?: true, get_content: nil) }
       let(:content_digest) { double('content_digest', generate_digest: 'correct_version') }
 
       let(:log) { double('log', warn: nil) }

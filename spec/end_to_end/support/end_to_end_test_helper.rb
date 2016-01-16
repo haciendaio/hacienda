@@ -22,5 +22,5 @@ def run_local_service
 end
 
 def upsert_content(github, file_content, item_path)
-  github.create_content("#{item_path} updated for test", item_path => file_content)
+  github.create_content("#{item_path} updated for test", item_path => file_content)[item_path]
 end

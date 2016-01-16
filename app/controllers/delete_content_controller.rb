@@ -68,7 +68,7 @@ module Hacienda
         metadata.remove_for_locale(locale)
 
         if metadata.has_languages?
-          @github.create_content(GENERIC_METADATA_UPDATE_COMMIT_MESSAGE, metadata_path => metadata.to_json)
+          @github.create_content(GENERIC_METADATA_UPDATE_COMMIT_MESSAGE, metadata_path => metadata.to_json).values.first
         else
           @github.delete_content(metadata_path, GENERIC_METADATA_DELETE_COMMIT_MESSAGE)
         end

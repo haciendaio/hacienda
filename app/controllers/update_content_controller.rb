@@ -41,8 +41,16 @@ module Hacienda
     private
 
     def update_content(author, content, id, locale, metadata_path, type)
-      updated_draft_version = update_draft(content, locale, type)
-      update_metadata(locale, metadata_path, author)
+      sha_of_referenced_files = shas(content, locale, type)
+      metadata = compose_metadata(author, locale, metadata_path)
+
+      content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
+
+      updated_json_file = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content_item_path => content.data.to_json).values.first
+      @github.create_content(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json).values.first
+
+      json_file_sha = updated_json_file.sha
+      updated_draft_version = @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
 
       response = ServiceHttpResponseFactory.ok_response({
                                                           versions: {
@@ -65,28 +73,21 @@ module Hacienda
       end
     end
 
-    def update_draft(content, locale, type)
-      sha_of_referenced_files = content.referenced_files.collect { |item| update_html_file(item, type, locale).sha }
-      json_file_sha = update_json_file(content, type, locale).sha
-      @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
-    end
-
-    def update_json_file(content, type, locale)
-      content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
-      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content_item_path => content.data.to_json)
+    def shas(content, locale, type)
+      content.referenced_files.collect { |item| update_html_file(item, type, locale).sha }
     end
 
     def update_html_file(item, type, locale)
       html_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value)
+      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value).values.first
     end
 
-    def update_metadata(locale, metadata_path, author)
+    def compose_metadata(author, locale, metadata_path)
       metadata = @metadata_factory.from_string(get_metadata(metadata_path))
       metadata.add_draft_language(locale) unless metadata.has_draft_language?(locale)
       metadata.update_last_modified(locale, DateTime.now)
       metadata.update_last_modified_by(locale, author)
-      @github.create_content(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)
+      metadata
     end
 
     def get_metadata(metadata_path)

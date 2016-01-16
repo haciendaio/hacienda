@@ -12,7 +12,7 @@ module Hacienda
       let(:log) { double('Log', info: '') }
       let(:metadata_factory) { double('MetadataFactory', from: metadata) }
       let(:metadata) { double('Metadata', has_languages?: false, remove_for_locale: nil) }
-      let(:github) { double('github', delete_content: '', get_content: double('GitFile', content: '{}'), create_content: '') }
+      let(:github) { double('github', delete_content: '', get_content: double('GitFile', content: '{}'), create_content: {''=>''}) }
       let(:file_provider) { double('FilePathProvider', draft_json_path_for: '', public_json_path_for: '', metadata_path_for: 'path/for/metadata') }
 
       let(:delete_content_controller) { DeleteContentController.new(github, log, file_provider, metadata_factory) }

@@ -23,7 +23,7 @@ module Hacienda
         git_wrapper = TestRuggedWrapper.new(@location)
         git_wrapper.commit(content, path)
 
-        GitFile.new(content, path, generate_hash(path))
+        { path => GitFile.new(content, path, generate_hash(path)) }
       end
 
       def delete_content(path, commit_message = '')
