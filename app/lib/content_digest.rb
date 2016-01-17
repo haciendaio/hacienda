@@ -11,10 +11,6 @@ module Hacienda
       @git_wrapper_factory = git_wrapper_factory
     end
 
-    def git_wrapper
-      @git_wrapper ||= @git_wrapper_factory.get_repo(@repo_path)
-    end
-
     def get_sha_for(item_path)
       file_path = "#{@repo_path}/#{item_path}"
 
@@ -37,6 +33,12 @@ module Hacienda
     def generate_digest(shas)
       combined_shas = shas.inject(:+)
       Digest::SHA2.new.update(combined_shas).to_s
+    end
+
+    private
+
+    def git_wrapper
+      @git_wrapper ||= @git_wrapper_factory.get_repo(@repo_path)
     end
 
   end

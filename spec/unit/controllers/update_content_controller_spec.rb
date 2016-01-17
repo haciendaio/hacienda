@@ -28,6 +28,9 @@ module Hacienda
         def empty?
           @files.empty?
         end
+        def sha_of(path)
+          "sha of #{path}"
+        end
       end
 
       class MockFileSystem
@@ -57,7 +60,7 @@ module Hacienda
         private
 
         def stored_file(path)
-          GitFile.new @files[path], path, "sha of #{path}"
+          GitFile.new @files[path], path, test_api.sha_of(path)
         end
       end
 
@@ -144,8 +147,8 @@ module Hacienda
           and_raise(Errors::FileNotFoundError.new 'oops no public version')
 
         content_digest.stub(:generate_digest).with([
-                                                       'sha of draft/en/mammal/reindeer.json',
-                                                       'sha of draft/en/mammal/reindeer-prancer.html'
+                                                       files.sha_of('draft/en/mammal/reindeer.json'),
+                                                       files.sha_of('draft/en/mammal/reindeer-prancer.html')
                                                    ]).and_return('updated-version')
 
         response = subject.update('mammal', 'reindeer', new_content, 'en', 'some author')
@@ -169,8 +172,8 @@ module Hacienda
         files.setup 'draft/en/mammal/reindeer.html' => '<html/>', 'draft/en/mammal/reindeer.json' => '{}'
 
         content_digest.stub(:generate_digest).with([
-                                                       'sha of draft/en/mammal/reindeer.json',
-                                                       'sha of draft/en/mammal/reindeer-prancer.html'
+                                                       files.sha_of('draft/en/mammal/reindeer.json'),
+                                                       files.sha_of('draft/en/mammal/reindeer-prancer.html')
                                                    ]).and_return('updated-version')
 
         response = subject.update('mammal', 'reindeer', new_content, 'en', 'some author')
