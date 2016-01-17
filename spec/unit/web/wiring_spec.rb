@@ -59,7 +59,7 @@ module Hacienda
 
       it 'should return content service controller' do
         expect(app.create_content_controller).to be_a CreateContentController
-        expect(app.create_content_controller.instance_variable_get(:@github)).to be_a Github
+        expect(app.create_content_controller.instance_variable_get(:@file_system)).to be_a Github
       end
 
       it 'should return a content update controller using draft content store... cos public doesnt return version info

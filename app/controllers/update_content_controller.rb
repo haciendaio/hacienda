@@ -40,13 +40,16 @@ module Hacienda
     private
 
     def update_content(author, content, id, locale, metadata_path, type)
-      sha_of_referenced_files = shas(content, locale, type)
+      sha_of_referenced_files = content.referenced_files.collect { |file|
+        update_html_file(content, file).sha
+      }
       metadata = compose_metadata(author, locale, metadata_path)
 
       content_item_path = content.json_file_path
 
       updated_files = @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
-                                             content_item_path => content.data.to_json, metadata_path => metadata.to_json)
+                                             content_item_path => content.data.to_json,
+                                             metadata_path => metadata.to_json)
       updated_json_file = updated_files[content_item_path]
 
       json_file_sha = updated_json_file.sha
@@ -71,10 +74,6 @@ module Hacienda
         @log.info("Trying to get the public version of type #{type} for id #{id} but did not find any")
         nil
       end
-    end
-
-    def shas(content, locale, type)
-      content.referenced_files.collect { |file| update_html_file(content,file).sha }
     end
 
     def update_html_file(content, file)

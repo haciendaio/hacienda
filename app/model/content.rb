@@ -26,9 +26,26 @@ module Hacienda
       @locale = locale
       @type = type
       @file_path_provider = FilePathProvider.new
+      @metadata_factory = MetadataFactory.new
 
       remove_unneeded_fields
       validate
+    end
+
+    def write_to(file_system, author, description, content_digest)
+      sha_of_referenced_files = referenced_files.collect { |file|
+        create_html_file(file_system, file, description).sha
+      }
+      metadata = @metadata_factory.create(@id, @locale, DateTime.now, author)
+      written_files = file_system.write_files(description,
+                                               json_file_path => @data.to_json,
+                                               metadata_file_path => metadata.to_json)
+      json_file_sha = written_files[json_file_path].sha
+      content_version = content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
+    end
+
+    def exists_in?(file_system)
+      file_system.content_exists? metadata_file_path
     end
 
     def json_file_path
@@ -44,6 +61,10 @@ module Hacienda
     end
 
     private
+
+    def create_html_file(file_system, file, description)
+      file_system.write_files(description, referenced_file_path(file) => file.value).values.first
+    end
 
     def validate
       raise Errors::UnprocessableEntityError.new('An ID must be specified.') if (@id.nil? || @id.empty?)

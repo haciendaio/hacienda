@@ -13,10 +13,9 @@ module Hacienda
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item created'
 
-    def initialize(github, content_digest)
-      @github = github
+    def initialize(file_system, content_digest)
+      @file_system = file_system
       @content_digest = content_digest
-      @metadata_factory = MetadataFactory.new
     end
 
     def create(type, content_json, locale, author)
@@ -24,26 +23,12 @@ module Hacienda
       content_data = JSON.parse(content_json)
       content = Content.build(content_data['id'], content_data, type: type, locale: locale)
 
-      json_path = content.json_file_path
-      metadata_path = content.metadata_file_path
-
       Log.context action: 'creating', id: content.id do
 
-        if @github.content_exists?(metadata_path)
+        if content.exists_in?(@file_system)
           response = ServiceHttpResponseFactory.conflict_response
         else
-          sha_of_referenced_files = content.referenced_files.collect { |file|
-            create_html_file(content, file).sha
-          }
-
-          metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
-
-          created = @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
-                                                     json_path => content.data.to_json,
-                                                     metadata_path => metadata.to_json)
-          json_file_sha = created[json_path].sha
-
-          draft_version = @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
+          draft_version = content.write_to(@file_system, author, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, @content_digest)
 
           response = ServiceHttpResponseFactory.created_response({
             versions: {
@@ -60,12 +45,6 @@ module Hacienda
         response
       end
 
-    end
-
-    private
-
-    def create_html_file(content, file)
-      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content.referenced_file_path(file) => file.value).values.first
     end
 
   end
