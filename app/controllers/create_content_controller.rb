@@ -3,7 +3,6 @@ require_relative '../utilities/log'
 require_relative '../model/content'
 require_relative '../exceptions/unprocessable_entity_error'
 require_relative '../metadata/metadata'
-require_relative '../services/file_path_provider'
 require_relative '../metadata/metadata_factory'
 require_relative '../web/service_http_response'
 require 'json'
@@ -17,23 +16,25 @@ module Hacienda
     def initialize(github, content_digest)
       @github = github
       @content_digest = content_digest
-      @file_path_provider = FilePathProvider.new
       @metadata_factory = MetadataFactory.new
     end
 
-    def create(type, data, locale, author)
+    def create(type, content_json, locale, author)
 
-      content = Content.from_create(data)
+      content_data = JSON.parse(content_json)
+      content = Content.build(content_data['id'], content_data, type: type, locale: locale)
 
-      json_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
-      metadata_path = @file_path_provider.metadata_path_for(content.id, type)
+      json_path = content.json_file_path
+      metadata_path = content.metadata_file_path
 
       Log.context action: 'creating', id: content.id do
 
         if @github.content_exists?(metadata_path)
           response = ServiceHttpResponseFactory.conflict_response
         else
-          sha_of_referenced_files = content.referenced_files.collect { |item| create_html_file(item, type, locale).sha }
+          sha_of_referenced_files = content.referenced_files.collect { |file|
+            create_html_file(content, file).sha
+          }
 
           metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
 
@@ -63,10 +64,8 @@ module Hacienda
 
     private
 
-
-    def create_html_file(item, type, locale)
-      file_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, file_path => item.value).values.first
+    def create_html_file(content, file)
+      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content.referenced_file_path(file) => file.value).values.first
     end
 
   end

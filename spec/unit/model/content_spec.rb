@@ -5,17 +5,17 @@ require_relative '../../../app/exceptions/unprocessable_entity_error'
 module Hacienda
   module Test
     describe Content do
-      describe '#new' do
-
+      describe '#build' do
+        let(:type_args) { {type: 'cat', locale: 'en'} }
         it 'should raise error on empty id' do
           expect {
-            Content.new('', {}, [])
+            Content.build('', {}, type_args)
           }.to raise_error Errors::UnprocessableEntityError, 'An ID must be specified.'
         end
 
         it 'should raise error on nil id' do
           expect {
-            Content.new(nil, {}, [])
+            Content.build(nil, {}, type_args)
           }.to raise_error Errors::UnprocessableEntityError, 'An ID must be specified.'
         end
 
@@ -23,14 +23,17 @@ module Hacienda
           id_with_151_chars = 'really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-really-long-id-r'
 
           expect {
-            Content.new(id_with_151_chars, {}, [])
+            Content.build(id_with_151_chars, {}, type_args)
           }.to raise_error Errors::UnprocessableEntityError, 'The ID must not exceed 150 characters in length.'
         end
 
+      end
+
+      describe '#new' do
         context 'removing unneeded fields' do
 
           it 'should remove the translated_locale field' do
-            content = Content.new('bob', { :translated_locale => 'cn' }, [])
+            content = Content.new('bob', { :translated_locale => 'cn'}, type: 'cat', locale: 'en', referenced_files: [])
             expect(content.data).to be_empty
           end
 

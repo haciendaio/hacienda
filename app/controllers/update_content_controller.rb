@@ -1,4 +1,3 @@
-require_relative '../services/file_path_provider'
 require_relative '../metadata/metadata_factory'
 require_relative '../github/github'
 require_relative '../utilities/log'
@@ -12,20 +11,20 @@ module Hacienda
   class UpdateContentController
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item modified'
-    GENERIC_METADATA_CHANGED_COMMIT_MESSAGE = 'Modified metadata file'
 
     def initialize(github, content_digest, content_store, log)
       @github = github
       @content_digest = content_digest
-      @file_path_provider = FilePathProvider.new
       @metadata_factory = MetadataFactory.new
       @content_store = content_store
       @log = log
     end
 
-    def update(type, id, data, locale, author)
-      content = Content.from_update(id, data)
-      metadata_path = @file_path_provider.metadata_path_for(content.id, type)
+    def update(type, id, content_json, locale, author)
+      content_data = JSON.parse(content_json)
+      content = Content.build(id, content_data, type: type, locale: locale)
+
+      metadata_path = content.metadata_file_path
 
       Log.context action: 'updating content item', type: type, id: content.id do
 
@@ -44,7 +43,7 @@ module Hacienda
       sha_of_referenced_files = shas(content, locale, type)
       metadata = compose_metadata(author, locale, metadata_path)
 
-      content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
+      content_item_path = content.json_file_path
 
       updated_files = @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
                                              content_item_path => content.data.to_json, metadata_path => metadata.to_json)
@@ -75,12 +74,11 @@ module Hacienda
     end
 
     def shas(content, locale, type)
-      content.referenced_files.collect { |item| update_html_file(item, type, locale).sha }
+      content.referenced_files.collect { |file| update_html_file(content,file).sha }
     end
 
-    def update_html_file(item, type, locale)
-      html_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value).values.first
+    def update_html_file(content, file)
+      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content.referenced_file_path(file) => file.value).values.first
     end
 
     def compose_metadata(author, locale, metadata_path)
