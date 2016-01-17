@@ -5,7 +5,7 @@ require 'fileutils'
 module Hacienda
   module Test
 
-    class FakeGithub
+    class FakeGithubFileSystem
 
       def initialize(content_directory_path, log = false)
         @location = content_directory_path

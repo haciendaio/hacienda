@@ -1,5 +1,5 @@
 require_relative '../metadata/metadata_factory'
-require_relative '../github/github'
+require_relative '../github/github_file_system'
 require_relative '../utilities/log'
 require_relative '../model/content'
 require_relative '../stores/content_store'

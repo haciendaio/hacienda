@@ -1,18 +1,18 @@
 require_relative '../integration_helper'
 require_relative '../../spec/fake_settings'
-require_relative '../../app/github/github'
+require_relative '../../app/github/github_file_system'
 require_relative '../utilities/fake_config_loader'
 
 module Hacienda
   module Test
-    describe Github do
+    describe GithubFileSystem do
 
       include FakeSettings
 
       let(:settings) {  FakeConfigLoader.new.load_config 'test' }
 
       it 'should delete stuff' do
-        github = Github.new(settings)
+        github = GithubFileSystem.new(settings)
 
         github.write_files('Committed...', 'black/white/cat.txt' => 'Postman Pat')
         github.delete_content('black/white/cat.txt', 'Deleted')
@@ -28,7 +28,7 @@ module Hacienda
             ENV.delete 'GITHUB_OAUTH_TOKEN'
 
             expect {
-              Github.new(settings).write_files('...', 'whatever' => 'something')
+              GithubFileSystem.new(settings).write_files('...', 'whatever' => 'something')
             }.to raise_error { |error|
               expect(error.message).to include 'GITHUB_OAUTH_TOKEN'
             }

@@ -15,7 +15,7 @@ require_relative 'git_file'
 
 module Hacienda
 
-  class Github
+  class GithubFileSystem
 
     include ExecutionTimeLogger
     include Retry

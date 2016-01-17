@@ -3,7 +3,7 @@ require_relative 'support/test_content_manager'
 
 require_relative '../shared/metadata_builder'
 require_relative '../../spec/shared/navigation'
-require_relative 'support/fake_github'
+require_relative 'support/fake_github_file_system'
 
 module Hacienda
   module Test
@@ -45,7 +45,7 @@ module Hacienda
       context 'setup through content service API but using fake github' do
 
         before :each do
-          allow_any_instance_of(app).to receive(:github).and_return(FakeGithub.new(TEST_REPO))
+          allow_any_instance_of(app).to receive(:github_file_system).and_return(FakeGithubFileSystem.new(TEST_REPO))
         end
 
         let(:a_content_item) { ContentItem.new }

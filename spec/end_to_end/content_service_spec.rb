@@ -54,7 +54,7 @@ module Hacienda
 
         @service_runner = run_local_service
 
-        @test_github = Github.new(fake_settings, GithubClient.new(fake_settings))
+        @test_github = GithubFileSystem.new(fake_settings, GithubClient.new(fake_settings))
 
         @client_id = SecureRandom.hex(32).upcase
         @client_secret = SecureRandom.hex(32).upcase

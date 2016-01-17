@@ -1,12 +1,12 @@
 require_relative '../unit_helper'
-require_relative '../../../app/github/github'
+require_relative '../../../app/github/github_file_system'
 require 'ostruct'
 
 module Hacienda
   module Test
-    describe 'Github' do
+    describe GithubFileSystem do
 
-      let(:github) { Github.new(settings, github_client, log) }
+      let(:github) { GithubFileSystem.new(settings, github_client, log) }
 
       let(:description) { 'some commit message' }
       let(:settings) { double('Settings', content_repo: 'repo') }
@@ -86,7 +86,7 @@ module Hacienda
         let(:content) { 'content' }
         let(:response_sha) { 'response_sha' }
         let(:github_client) { double('GithubClient', get_file_content: OpenStruct.new(sha: response_sha, path: nil, content: Base64.strict_encode64(content))) }
-        let(:github) { Github.new(settings, github_client, log) }
+        let(:github) { GithubFileSystem.new(settings, github_client, log) }
 
         before :each do
           @file = github.get_content('/en/cats.txt')

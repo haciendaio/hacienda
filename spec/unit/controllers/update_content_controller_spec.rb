@@ -6,65 +6,14 @@ require_relative '../../../app/services/file_path_provider'
 require_relative '../../../app/metadata/metadata_factory'
 require_relative '../../shared/metadata_builder'
 require_relative 'service_http_response_double'
+require_relative '../github/in_memory_file_system'
 
 module Hacienda
   module Test
 
     describe UpdateContentController do
 
-      class TestFilesApi
-        def initialize(files)
-          @files = files
-        end
-        def setup(files)
-          @files.merge! files
-        end
-        def exists?(path)
-          @files.has_key? path
-        end
-        def content_of(path)
-          @files[path]
-        end
-        def empty?
-          @files.empty?
-        end
-        def sha_of(path)
-          "sha of #{path}"
-        end
-      end
-
-      class MockFileSystem
-
-        def initialize
-          @files = {}
-        end
-        def content_exists?(path)
-          @files.has_key? path
-        end
-        def get_content(path)
-          stored_file(path)
-        end
-
-        def write_files(description, files)
-          @files.merge! files
-          stored_files = files.each_pair.map do |path, content|
-            [path, stored_file(path)]
-          end.to_h
-          stored_files
-        end
-
-        def test_api
-          TestFilesApi.new(@files)
-        end
-
-        private
-
-        def stored_file(path)
-          GitFile.new @files[path], path, test_api.sha_of(path)
-        end
-      end
-
-      let(:file_system) { MockFileSystem.new }
+      let(:file_system) { InMemoryFileSystem.new }
       let(:files) { file_system.test_api }
       let(:content_digest) { double('content_digest', generate_digest: 'DIGEST') }
 
