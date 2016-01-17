@@ -1,6 +1,7 @@
 require_relative 'referenced_file'
 require_relative '../exceptions/unprocessable_entity_error'
 require_relative '../services/file_path_provider'
+require_relative '../metadata/metadata_factory'
 
 module Hacienda
   class Content

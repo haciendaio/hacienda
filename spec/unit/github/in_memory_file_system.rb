@@ -1,3 +1,5 @@
+require_relative '../../../app/github/git_file'
+
 module Hacienda
   module Test
 
