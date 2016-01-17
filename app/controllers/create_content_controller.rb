@@ -35,9 +35,13 @@ module Hacienda
           response = ServiceHttpResponseFactory.conflict_response
         else
           sha_of_referenced_files = content.referenced_files.collect { |item| create_html_file(item, type, locale).sha }
-          json_file_sha = create_json_file(content.data, json_path).sha
 
-          create_metadata_file(content, locale, metadata_path, author)
+          metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
+
+          created = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
+                                                     json_path => content.data.to_json,
+                                                     metadata_path => metadata.to_json)
+          json_file_sha = created[json_path].sha
 
           draft_version = @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
 
@@ -60,14 +64,6 @@ module Hacienda
 
     private
 
-    def create_metadata_file(content, locale, path, author)
-      metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
-      @github.create_content(GENERIC_METADATA_CREATED_COMMIT_MESSAGE, path => metadata.to_json).values.first
-    end
-
-    def create_json_file(data_hash, path)
-      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, path => data_hash.to_json).values.first
-    end
 
     def create_html_file(item, type, locale)
       file_path = @file_path_provider.draft_path_for(item.file_name, type, locale)

@@ -10,7 +10,16 @@ module Hacienda
     describe CreateContentController do
 
       let(:content_digest) { double('content_digest', generate_digest: 'version') }
-      let(:github) { double('github', create_content: { 'path' => double(sha: 'version')}, content_exists?: false) }
+      let(:github) { double('github', content_exists?: false) }
+
+      before {
+        github.stub(:create_content) do |message, items|
+          STDERR.puts "creating: #{items}"
+          items.map {|path, content|
+            [path, double(sha: 'version')]
+          }.to_h
+        end
+      }
 
       subject { CreateContentController.new(github, content_digest) }
 
@@ -21,7 +30,7 @@ module Hacienda
         subject.create('news', item_json, 'cn', 'some author')
 
         expect(github).to have_received(:create_content).with(anything, 'draft/cn/news/item-id-content-body.html' => '<p>body</p>')
-        expect(github).to have_received(:create_content).with(anything, 'draft/cn/news/item-id.json' => processed_json)
+        expect(github).to have_received(:create_content).with(anything, include('draft/cn/news/item-id.json' => processed_json))
       end
 
       it 'should return a 409 if content exists' do
@@ -40,20 +49,25 @@ module Hacienda
         metadata = MetadataFactory.new.create('an_id', 'pt', datetime, 'some author')
 
         subject.create('news', {id: 'an_id'}.to_json, 'pt', 'some author')
-        expect(github).to have_received(:create_content).with(anything, 'metadata/news/an_id.json' => metadata.to_json)
+        expect(github).to have_received(:create_content).with(anything, include('metadata/news/an_id.json' => metadata.to_json))
       end
 
       describe 'response' do
 
+        let(:content) {{id: 'new-id-for-create'}.to_json}
+
         it 'should return the version of the created file' do
-          github.stub(:create_content).with(anything, 'draft/en/news/item-id-content-body.html' => anything).and_return({ 'draft/en/news/item-id-content-body.html' => double(sha: 'html_v1')})
-          github.stub(:create_content).with(anything, 'draft/en/news/item-id.json' => anything).and_return({'draft/en/news/item-id.json' => double(sha: 'json_v1')})
+          html = 'some html'
+          content = {id: 'item-id', content_body_html: html}.to_json
 
-          content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('a_version')
+          github.stub(:create_content).with(anything, include('draft/en/news/item-id-content-body.html' => html)).and_return({ 'draft/en/news/item-id-content-body.html' => double(sha: 'html_v1')})
+          github.stub(:create_content).with(anything, have_key('draft/en/news/item-id.json')).and_return({'draft/en/news/item-id.json' => double(sha: 'json_v1')})
 
-          response = subject.create('news', {id: 'item-id', content_body_html: ''}.to_json, 'en', 'some author')
+          content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('the_version')
 
-          expect(response.etag).to eq 'a_version'
+          response = subject.create('news', content, 'en', 'some author')
+
+          expect(response.etag).to eq 'the_version'
         end
 
         it 'should return the path for the content item ' do
@@ -72,10 +86,10 @@ module Hacienda
         end
 
         it 'return a draft version and a nil public version' do
-          github.stub(:create_content).with(anything, 'draft/en/news/new-id-for-create.json' => anything).and_return('draft/en/news/new-id-for-create.json' => double(sha: 'json_v1'))
+          github.stub(:create_content).with(anything, include('draft/en/news/new-id-for-create.json' => content)).and_return('draft/en/news/new-id-for-create.json' => double(sha: 'json_v1'))
           content_digest.stub(:generate_digest).with(%w(json_v1)).and_return('a_version')
 
-          result = subject.create('news', {id: 'new-id-for-create'}.to_json, 'en', 'some author')
+          result = subject.create('news', content, 'en', 'some author')
 
           body = JSON.parse(result.body, symbolize_names: true)
 
