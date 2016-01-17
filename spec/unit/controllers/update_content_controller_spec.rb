@@ -15,7 +15,7 @@ module Hacienda
       let(:json_file) { double('json_file', content: '{}', sha: 'json_v1') }
       let(:html_file) { double('html_file', content: '', sha: 'html_v1') }
 
-      let(:github) { double('github', create_content: { 'path' => json_file }, content_exists?: true) }
+      let(:github) { double('github', content_exists?: true) }
       let(:content_digest) { double('content_digest', generate_digest: 'DIGEST') }
 
       let(:metadata_factory) { MetadataFactory.new }
@@ -30,6 +30,9 @@ module Hacienda
 
       before :each do
         github.stub(:get_content).and_return(json_file, html_file)
+        github.stub(:create_content) do |message, item|
+          {item.keys.first => json_file}
+        end
       end
 
       it 'should update content when locale already exists' do
@@ -41,13 +44,14 @@ module Hacienda
 
         subject.update('mammal', 'reindeer', new_content, 'es', 'new author')
 
-        expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => anything)
         expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer-prancer.html' => 'antler')
-        expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer.json' => {
-            'id' => 'reindeer',
-            'type' => 'mammal',
-            'prancer_ref' => 'reindeer-prancer.html'
-        }.to_json)
+        expect(github).to have_received(:create_content).with(anything,
+                                                              'metadata/mammal/reindeer.json' => anything,
+                                                              'draft/es/mammal/reindeer.json' => {
+                                                                  'id' => 'reindeer',
+                                                                  'type' => 'mammal',
+                                                                  'prancer_ref' => 'reindeer-prancer.html'
+                                                              }.to_json)
       end
 
       it 'should update content and metadata when locale does not exist' do
@@ -70,13 +74,14 @@ module Hacienda
             .with_last_modified_by('es', 'new author')
             .build
 
-        expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => expected_metadata.to_json)
         expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer-prancer.html' => 'antler')
-        expect(github).to have_received(:create_content).with(anything, 'draft/es/mammal/reindeer.json' => {
-            'id' => 'reindeer',
-            'type' => 'mammal',
-            'prancer_ref' => 'reindeer-prancer.html'
-        }.to_json)
+        expect(github).to have_received(:create_content).with(anything,
+                                                              'metadata/mammal/reindeer.json' => expected_metadata.to_json,
+                                                              'draft/es/mammal/reindeer.json' => {
+                                                                  'id' => 'reindeer',
+                                                                  'type' => 'mammal',
+                                                                  'prancer_ref' => 'reindeer-prancer.html'
+                                                              }.to_json)
       end
 
       it 'should return a 404 when no metadata for content' do
@@ -95,7 +100,7 @@ module Hacienda
         new_content = { 'id' => 'reindeer', 'type' => 'mammal', 'prancer_html' => 'antler' }.to_json
 
         github.stub(:get_content).with('metadata/mammal/reindeer.json').and_return(double(content: metadata.to_json))
-        github.stub(:create_content).and_return({'html' => html_file}, {'json' => json_file})
+        github.stub(:create_content).and_return({'draft/en/mammal/reindeer.html' => html_file}, {'draft/en/mammal/reindeer.json' => json_file})
         content_store.stub(:find_one).with('mammal', 'reindeer', 'en').
           and_raise(Errors::FileNotFoundError.new 'oops no public version')
         content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('updated-version')
@@ -117,7 +122,7 @@ module Hacienda
 
         content_store.stub(:find_one).with('mammal', 'reindeer', 'en').and_return(existing_content)
         github.stub(:get_content).with('metadata/mammal/reindeer.json').and_return(double(content: metadata.to_json))
-        github.stub(:create_content).and_return({'html' => html_file}, {'json' => json_file})
+        github.stub(:create_content).and_return({'html' => html_file, 'draft/en/mammal/reindeer.json' => json_file})
         content_digest.stub(:generate_digest).with(%w(json_v1 html_v1)).and_return('updated-version')
 
         response = subject.update('mammal', 'reindeer', new_content, 'en', 'some author')
@@ -147,7 +152,7 @@ module Hacienda
             .with_draft_languages('en')
             .with_last_modified('en', new_datetime)
             .with_last_modified_by('en', 'some author')
-        expect(github).to have_received(:create_content).with(anything, 'metadata/mammal/reindeer.json' => expected_metadata.build.to_json)
+        expect(github).to have_received(:create_content).with(anything, include('metadata/mammal/reindeer.json' => expected_metadata.build.to_json))
       end
 
       def parse_json(json)

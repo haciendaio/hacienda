@@ -46,8 +46,9 @@ module Hacienda
 
       content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
 
-      updated_json_file = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content_item_path => content.data.to_json).values.first
-      @github.create_content(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json).values.first
+      updated_files = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
+                                             content_item_path => content.data.to_json, metadata_path => metadata.to_json)
+      updated_json_file = updated_files[content_item_path]
 
       json_file_sha = updated_json_file.sha
       updated_draft_version = @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))

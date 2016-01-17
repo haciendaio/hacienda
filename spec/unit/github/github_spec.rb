@@ -34,7 +34,7 @@ module Hacienda
           github_client.stub(:get_tree).with('head_reference').and_return('base_tree_reference')
 
           github.create_content('Commit message', 'path' => 'content')
-          expect(github_client).to have_received(:create_tree).with('base_tree_reference', 'content_reference', 'path')
+          expect(github_client).to have_received(:create_tree).with('base_tree_reference', {'path' => 'content_reference'})
         end
 
         it 'should create new commit' do
@@ -73,11 +73,10 @@ module Hacienda
             }.to raise_error
           end
 
-          it 'should not allow creating more than one content items' do
-            expect {
-              github.create_content('Commit message', 'bob.txt' => 'hi',
-                                                      'foo/bar/red.txt' => 'blue')
-            }.to raise_error
+          it 'should allow creating more than one content items' do
+            github.create_content('Commit message', 'bob.txt' => 'hi',
+                                                    'foo/bar/red.txt' => 'blue')
+            expect(github_client).to have_received(:create_blob).twice
           end
         end
 

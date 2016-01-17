@@ -51,7 +51,7 @@ module Hacienda
         end
 
         git_wrapper = TestRuggedWrapper.new(@repository)
-        git_wrapper.commit(file_content, item_path)
+        git_wrapper.commit item_path => file_content
         path
       end
 

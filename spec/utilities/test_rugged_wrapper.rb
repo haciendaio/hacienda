@@ -28,11 +28,14 @@ module Hacienda
         Rugged::Commit.create(repo, options)
       end
 
-      def commit(content, path)
-        oid = @repo.write(content, :blob)
+      def commit(items)
         index = @repo.index
         index.read_tree(@repo.head.target.tree)
-        index.add(:path => path, :oid => oid, :mode => 0100644)
+
+        items.each_pair do |path, content|
+          oid = @repo.write(content, :blob)
+          index.add(:path => path, :oid => oid, :mode => 0100644)
+        end
 
         options = {}
         options[:tree] = index.write_tree(@repo)

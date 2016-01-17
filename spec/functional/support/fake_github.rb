@@ -15,15 +15,19 @@ module Hacienda
       end
 
       def create_content(commit_message, items)
-        path = items.keys.first
-        content = items[path]
-        log 'create_content', path
-        open(full_path(path), 'w+') { |file| file.write content }
+        log 'create_content', items.keys
+        items.each_pair do |path, content|
+          open(full_path(path), 'w+') { |file| file.write content }
+        end
 
         git_wrapper = TestRuggedWrapper.new(@location)
-        git_wrapper.commit(content, path)
+        git_wrapper.commit(items)
 
-        { path => GitFile.new(content, path, generate_hash(path)) }
+        files = {}
+        items.each_pair do |path, content|
+          files[path] = GitFile.new(content, path, generate_hash(path))
+        end
+        files
       end
 
       def delete_content(path, commit_message = '')
@@ -45,6 +49,7 @@ module Hacienda
       # TEST HELPERS
 
       def size
+        STDERR.puts "in size: #{Dir.glob(File.join(@location, '**', '*'))}"
         Dir.glob(File.join(@location, '**', '*')).select { |file| File.file?(file) }.count
       end
 
