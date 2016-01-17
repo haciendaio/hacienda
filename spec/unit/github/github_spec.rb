@@ -8,7 +8,7 @@ module Hacienda
 
       let(:github) { Github.new(settings, github_client, log) }
 
-      let(:message) { 'some commit message' }
+      let(:description) { 'some commit message' }
       let(:settings) { double('Settings', content_repo: 'repo') }
       let(:log) { double('Logger', info: nil, warn: nil) }
       let(:github_client) { double('GithubClient',
@@ -22,34 +22,33 @@ module Hacienda
                                    update_head_ref_to: nil)
       }
 
-
-      context '#create_content' do
+      context '#write_files' do
 
         it 'should create content blob' do
-          github.create_content(message, 'path' => 'content')
+          github.write_files(description, 'path' => 'content')
           expect(github_client).to have_received(:create_blob).with('content')
         end
 
         it 'should create new tree based on the tree of the head commit' do
           github_client.stub(:get_tree).with('head_reference').and_return('base_tree_reference')
 
-          github.create_content('Commit message', 'path' => 'content')
+          github.write_files(description, 'path' => 'content')
           expect(github_client).to have_received(:create_tree).with('base_tree_reference', {'path' => 'content_reference'})
         end
 
         it 'should create new commit' do
-          github.create_content('Commit message', 'path' => 'content')
-          expect(github_client).to have_received(:create_commit).with('head_reference', 'tree_reference', 'Commit message')
+          github.write_files(description, 'path' => 'content')
+          expect(github_client).to have_received(:create_commit).with('head_reference', 'tree_reference', description)
         end
 
         it 'should update the reference' do
-          github.create_content('Commit message', 'path' => 'content')
+          github.write_files(description, 'path' => 'content')
           expect(github_client).to have_received(:update_head_ref_to).with('commit_reference')
         end
 
         it 'should return a new git file' do
           github_client.stub(:create_blob).and_return('sha1')
-          files = github.create_content('Commit message', 'path' => 'content')
+          files = github.write_files(description, 'path' => 'content')
 
           file = files['path']
 
@@ -63,18 +62,18 @@ module Hacienda
 
           it 'should not allow creating no content items' do
             expect {
-              github.create_content('Commit message', {})
+              github.write_files description, {}
             }.to raise_error
           end
 
           it 'should not allow call without items' do
             expect {
-              github.create_content('Commit message')
+              github.write_files description
             }.to raise_error
           end
 
           it 'should allow creating more than one content items' do
-            github.create_content('Commit message', 'bob.txt' => 'hi',
+            github.write_files(description, 'bob.txt' => 'hi',
                                                     'foo/bar/red.txt' => 'blue')
             expect(github_client).to have_received(:create_blob).twice
           end
@@ -126,18 +125,20 @@ module Hacienda
       end
 
       context 'Delete content' do
+        let(:description) { 'deletion commit message' }
+
         it 'should raise NotFound exception when not find the content to delete' do
           github_client.stub(:get_file_content).and_raise(Octokit::NotFound)
-          expect { github.delete_content('some/path', 'commit message delete')}.to raise_error(Errors::NotFoundException)
+          expect { github.delete_content('some/path', description)}.to raise_error(Errors::NotFoundException)
         end
 
         it 'should delegate to github client for delete' do
           github_client.stub(:get_file_content).and_return(OpenStruct.new(sha: 'some sha', path: nil, content: ''))
           github_client.stub(:delete_content).and_return(OpenStruct.new(commit: OpenStruct.new(sha: 'commit sha')))
-          github.delete_content('some/path', 'commit message delete')
+          github.delete_content('some/path', description)
 
           expect(github_client).to have_received(:get_file_content).with('some/path')
-          expect(github_client).to have_received(:delete_content).with('some/path', 'some sha' ,'commit message delete')
+          expect(github_client).to have_received(:delete_content).with('some/path', 'some sha', description)
           #TODO:  Removing update of the head/ref as it seems to be updated by the delete content api call
           # expect(github_client).to have_received(:update_head_ref_to).with('commit sha')
         end
@@ -154,7 +155,7 @@ module Hacienda
             OpenStruct.new(commit: OpenStruct.new(sha: 'commit sha'))
           }
 
-          github.delete_content('some/path', 'commit message delete', retry_timeout_s: 0.001)
+          github.delete_content('some/path', description, retry_timeout_s: 0.001)
 
           expect(github_client).to have_received(:delete_content).twice
         end
@@ -165,7 +166,7 @@ module Hacienda
           github_client.stub(:delete_content).and_raise Octokit::Conflict.new
 
           expect {
-            github.delete_content('some/path', 'commit message delete', retry_timeout_s: 0.001)
+            github.delete_content('some/path', description, retry_timeout_s: 0.001)
           }.to raise_error
 
           expect(github_client).to have_received(:delete_content).twice

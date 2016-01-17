@@ -46,7 +46,7 @@ module Hacienda
 
       content_item_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
 
-      updated_files = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
+      updated_files = @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
                                              content_item_path => content.data.to_json, metadata_path => metadata.to_json)
       updated_json_file = updated_files[content_item_path]
 
@@ -80,7 +80,7 @@ module Hacienda
 
     def update_html_file(item, type, locale)
       html_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value).values.first
+      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, html_path => item.value).values.first
     end
 
     def compose_metadata(author, locale, metadata_path)

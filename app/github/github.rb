@@ -26,9 +26,8 @@ module Hacienda
       @github_client = github_client
     end
 
-    def create_content(commit_message, items = {})
+    def write_files(description, items = {})
       raise "Need some content items to create" if items.empty?
-
 
       log_execution_time_of('Changing remote content') do
         retry_for_a_number_of_attempts(3, Octokit::UnprocessableEntity) do
@@ -42,7 +41,7 @@ module Hacienda
           end
 
           tree_reference = @github_client.create_tree(base_tree_reference, paths_to_refs)
-          create_commit_reference_value = @github_client.create_commit(head_reference, tree_reference, commit_message)
+          create_commit_reference_value = @github_client.create_commit(head_reference, tree_reference, description)
           commit_reference = create_commit_reference_value
 
           @github_client.update_head_ref_to(commit_reference)

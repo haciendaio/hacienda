@@ -13,7 +13,7 @@ module Hacienda
 
     describe PublishContentController do
 
-      let(:github) { double('github', create_content: {'' => {}}, update_content: nil, content_exists?: true, get_content: nil) }
+      let(:github) { double('github', write_files: {'' => {}}, update_content: nil, content_exists?: true, get_content: nil) }
       let(:content_digest) { double('content_digest', generate_digest: 'correct_version') }
 
       let(:log) { double('log', warn: nil) }
@@ -40,7 +40,7 @@ module Hacienda
 
         it 'should publish all referenced html files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with(anything, 'public/es/teas/tea-id-earl-grey.html' => 'Earl Grey')
+          expect(github).to have_received(:write_files).with(anything, 'public/es/teas/tea-id-earl-grey.html' => 'Earl Grey')
         end
 
         it 'should return a draft version and a public version with the same sha' do
@@ -57,7 +57,7 @@ module Hacienda
 
         it 'should update the metadata when it publishes files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with(anything, 'metadata/teas/tea-id.json' => metadata.add_public_language('es').to_json)
+          expect(github).to have_received(:write_files).with(anything, 'metadata/teas/tea-id.json' => metadata.add_public_language('es').to_json)
         end
 
         it 'should not add the public language if it already exists in the metadata' do
@@ -65,7 +65,7 @@ module Hacienda
           github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata_file', content: metadata.to_json))
 
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:create_content).with(anything, 'metadata/teas/tea-id.json' => metadata.to_json)
+          expect(github).to have_received(:write_files).with(anything, 'metadata/teas/tea-id.json' => metadata.to_json)
         end
 
       end
@@ -85,7 +85,7 @@ module Hacienda
             subject.publish('teas', 'tea-id', 'wrong_version', 'es')
           }.to raise_error(Errors::PreconditionFailedError)
 
-          expect(github).not_to have_received(:create_content)
+          expect(github).not_to have_received(:write_files)
         end
 
       end

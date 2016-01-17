@@ -13,7 +13,6 @@ module Hacienda
   class CreateContentController
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item created'
-    GENERIC_METADATA_CREATED_COMMIT_MESSAGE = 'Created metadata file'
 
     def initialize(github, content_digest)
       @github = github
@@ -38,7 +37,7 @@ module Hacienda
 
           metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
 
-          created = @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
+          created = @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE,
                                                      json_path => content.data.to_json,
                                                      metadata_path => metadata.to_json)
           json_file_sha = created[json_path].sha
@@ -67,7 +66,7 @@ module Hacienda
 
     def create_html_file(item, type, locale)
       file_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, file_path => item.value).values.first
+      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, file_path => item.value).values.first
     end
 
   end

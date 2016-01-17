@@ -14,8 +14,8 @@ module Hacienda
         TestRuggedWrapper.init_git_repo(content_directory_path)
       end
 
-      def create_content(commit_message, items)
-        log 'create_content', items.keys
+      def write_files(description, items)
+        log 'write_files', items.keys
         items.each_pair do |path, content|
           open(full_path(path), 'w+') { |file| file.write content }
         end
