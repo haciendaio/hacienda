@@ -36,12 +36,33 @@ module Hacienda
       sha_of_referenced_files = referenced_files.collect { |file|
         create_html_file(file_system, file, description).sha
       }
-      metadata = @metadata_factory.create(@id, @locale, DateTime.now, author)
+
+      if exists_in? file_system
+        metadata = update_metadata(author, get_metadata(file_system))
+      else
+        metadata = create_metadata(author)
+      end
       written_files = file_system.write_files(description,
                                                json_file_path => @data.to_json,
                                                metadata_file_path => metadata.to_json)
       json_file_sha = written_files[json_file_path].sha
       content_version = content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
+    end
+
+    def create_metadata(author)
+      @metadata_factory.create(@id, @locale, DateTime.now, author)
+    end
+
+    def update_metadata(author, metadata)
+      metadata.add_draft_language(@locale) unless metadata.has_draft_language?(@locale)
+      metadata.update_last_modified(@locale, DateTime.now)
+      metadata.update_last_modified_by(@locale, author)
+      metadata
+    end
+
+    def get_metadata(file_system)
+      metadata_json = file_system.get_content(metadata_file_path).content
+      @metadata_factory.from_string(metadata_json)
     end
 
     def exists_in?(file_system)

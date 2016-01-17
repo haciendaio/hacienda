@@ -76,12 +76,12 @@ module Hacienda
 
         expect(github).to have_received(:write_files).with(anything, 'draft/es/mammal/reindeer-prancer.html' => 'antler')
         expect(github).to have_received(:write_files).with(anything,
-                                                              'metadata/mammal/reindeer.json' => expected_metadata.to_json,
-                                                              'draft/es/mammal/reindeer.json' => {
+                                                              include('draft/es/mammal/reindeer.json' => {
                                                                   'id' => 'reindeer',
                                                                   'type' => 'mammal',
                                                                   'prancer_ref' => 'reindeer-prancer.html'
-                                                              }.to_json)
+                                                              }.to_json))
+        expect(github).to have_received(:write_files).with(anything, include('metadata/mammal/reindeer.json' => expected_metadata.to_json))
       end
 
       it 'should return a 404 when no metadata for content' do
