@@ -27,7 +27,6 @@ module Hacienda
       metadata_path = content.metadata_file_path
 
       Log.context action: 'updating content item', type: type, id: content.id do
-
         if content.exists_in? @github
           response = update_content(author, content, id, locale, metadata_path, type)
         else
@@ -63,11 +62,5 @@ module Hacienda
         nil
       end
     end
-
-    def update_html_file(content, file)
-      @github.write_files(GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, content.referenced_file_path(file) => file.value).values.first
-    end
-
-
   end
 end

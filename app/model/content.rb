@@ -7,7 +7,7 @@ module Hacienda
 
     MAX_ID_LENGTH = 150
 
-    attr_reader :data, :referenced_files, :id
+    attr_reader :data, :referenced_files, :id, :type, :locale
 
     def self.build(id, data, type:, locale:)
       referenced_files = get_html_fields_from_content_data(id, data)
@@ -84,7 +84,8 @@ module Hacienda
     private
 
     def create_html_file(file_system, file, description)
-      file_system.write_files(description, referenced_file_path(file) => file.value).values.first
+      written = file_system.write_files(description, referenced_file_path(file) => file.value)
+      written.values.first
     end
 
     def validate
