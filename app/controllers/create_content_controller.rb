@@ -21,31 +21,38 @@ module Hacienda
     def create(type, content_json, locale, author)
 
       content_data = JSON.parse(content_json)
-      content = Content.build(content_data['id'], content_data, type: type, locale: locale)
+      id = content_data['id']
+
+      content = Content.build(id, content_data, type: type, locale: locale)
 
       Log.context action: 'creating', id: content.id do
-
         if content.exists_in?(@file_system)
-          response = ServiceHttpResponseFactory.conflict_response
+          ServiceHttpResponseFactory.conflict_response
         else
           draft_version = content.write_to(@file_system, author, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, @content_digest)
-
-          response = ServiceHttpResponseFactory.created_response({
-            versions: {
-              draft: draft_version,
-              public: nil
-            }
-          }.to_json)
-
-          response.etag = draft_version
-          response.location = "#{type}/#{content.id}/#{locale}"
-          response.content_type = 'application/json'
+          create_response(content, draft_version)
         end
-
-        response
       end
 
     end
+
+    def create_response(content, draft_version)
+      response_data = {
+          versions: {
+              draft: draft_version,
+              public: nil
+          }
+      }
+      update_headers(ServiceHttpResponseFactory.created_response(response_data.to_json), content, draft_version)
+    end
+
+    def update_headers(response, content, draft_version)
+      response.etag = draft_version
+      response.location = "#{content.type}/#{content.id}/#{content.locale}"
+      response.content_type = 'application/json'
+      response
+    end
+
 
   end
 
