@@ -4,6 +4,7 @@ require_relative 'support/test_content_manager'
 require_relative '../shared/metadata_builder'
 require_relative '../../spec/shared/navigation'
 require_relative '../../spec/functional/support/fake_github_file_system'
+require_relative '../shared/test_content'
 require_relative '../shared/content_item'
 
 module Hacienda
@@ -14,7 +15,7 @@ module Hacienda
 
       let(:fake_github) { FakeGithubFileSystem.new(TEST_REPO) }
       let(:a_content_item) { ContentItem.new }
-      let(:content) { Content.new }
+      let(:content) { TestContent.new }
 
       before :each do
         app.set :content_directory_path, TEST_REPO

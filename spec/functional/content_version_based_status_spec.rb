@@ -1,6 +1,7 @@
 require_relative 'support/functional_test_helper'
 require_relative 'support/test_content_manager'
 
+require_relative '../shared/test_content'
 require_relative '../shared/metadata_builder'
 require_relative '../../spec/shared/navigation'
 require_relative '../../spec/functional/support/fake_github_file_system'
@@ -17,7 +18,7 @@ module Hacienda
       end
 
       let(:a_content_item) { ContentItem.new }
-      let(:content) { Content.new }
+      let(:content) { TestContent.new }
 
       it 'should return nil version for both draft and public for content that has fallen back to another locale' do
         german_content = a_content_item.with locale: 'de'

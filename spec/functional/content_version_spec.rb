@@ -1,6 +1,7 @@
 require_relative 'support/functional_test_helper'
 require_relative 'support/test_content_manager'
 
+require_relative '../shared/test_content'
 require_relative '../shared/metadata_builder'
 require_relative '../../spec/shared/navigation'
 require_relative 'support/fake_github_file_system'
@@ -49,7 +50,7 @@ module Hacienda
         end
 
         let(:a_content_item) { ContentItem.new }
-        let(:content) { Content.new }
+        let(:content) { TestContent.new }
 
         it 'should include the version of a new draft item in its locale' do
           content.add a_content_item.to_hash
