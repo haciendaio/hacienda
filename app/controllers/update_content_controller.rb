@@ -3,6 +3,7 @@ require_relative '../utilities/log'
 require_relative '../model/content'
 require_relative '../stores/content_store'
 require_relative '../web/service_http_response'
+require_relative '../model/content_factory'
 
 require 'json'
 
@@ -11,16 +12,17 @@ module Hacienda
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item modified'
 
-    def initialize(github, content_digest, content_store, log)
+    def initialize(github, content_digest, content_store, log, content_factory: ContentFactory.new)
       @github = github
       @content_digest = content_digest
       @content_store = content_store
       @log = log
+      @content_factory = content_factory
     end
 
     def update(type, id, content_json, locale, author)
       content_data = JSON.parse(content_json)
-      content = Content.build(id, content_data, type: type, locale: locale)
+      content = @content_factory.instance(id, content_data, type: type, locale: locale)
 
       Log.context action: 'updating content item', type: type, id: content.id do
         if content.exists_in? @github

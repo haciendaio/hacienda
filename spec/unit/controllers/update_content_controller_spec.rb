@@ -23,9 +23,10 @@ module Hacienda
         versions = { draft: 'existing-draft-version', public: 'existing-public-version' }
         {id: 'some-id', versions: versions}
       }
+      let(:content_factory) { ContentFactory.new }
 
       let(:content_store) { double('content store', find_one: existing_version)}
-      subject { UpdateContentController.new(file_system, content_digest, content_store, double('Log', info:nil)) }
+      subject { UpdateContentController.new(file_system, content_digest, content_store, double('Log', info:nil), content_factory: content_factory) }
 
       it 'should update content when locale already exists' do
         metadata = metadata_factory.create('reindeer', 'es', datetime.to_s, 'old author')

@@ -3,6 +3,7 @@ require_relative '../utilities/log'
 require_relative '../model/content'
 require_relative '../exceptions/unprocessable_entity_error'
 require_relative '../web/service_http_response'
+require_relative '../model/content_factory'
 require 'json'
 
 module Hacienda
@@ -11,9 +12,10 @@ module Hacienda
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item created'
 
-    def initialize(file_system, content_digest)
+    def initialize(file_system, content_digest, content_factory: ContentFactory.new)
       @file_system = file_system
       @content_digest = content_digest
+      @content_factory = content_factory
     end
 
     def create(type, content_json, locale, author)
@@ -21,7 +23,7 @@ module Hacienda
       content_data = JSON.parse(content_json)
       id = content_data['id']
 
-      content = Content.build(id, content_data, type: type, locale: locale)
+      content = @content_factory.instance(id, content_data, type: type, locale: locale)
 
       Log.context action: 'creating', id: content.id do
         if content.exists_in?(@file_system)
@@ -50,7 +52,6 @@ module Hacienda
       response.content_type = 'application/json'
       response
     end
-
 
   end
 
