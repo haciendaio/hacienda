@@ -10,10 +10,9 @@ module Hacienda
   class PublishContentController
 
     GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE = 'Content item published'
-    GENERIC_METADATA_CHANGED_COMMIT_MESSAGE = 'Modified metadata file'
 
-    def initialize(github, content_digest, log)
-      @github = github
+    def initialize(file_system, content_digest, log)
+      @file_system = file_system
       @content_digest = content_digest
       @log = log
       @file_path_provider = FilePathProvider.new
@@ -32,21 +31,20 @@ module Hacienda
           raise Errors::PreconditionFailedError
         end
 
-        files = {}
+        public_json_path = @file_path_provider.public_json_path_for(id, type, locale)
 
-        files[@file_path_provider.public_json_path_for(id, type, locale)] = json_git_file.content
-        @github.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, files)
+        write_html_files(html_files, locale, type)
 
-        html_files.each_pair do |filename, file|
-          target_file_path1 = @file_path_provider.public_path_for(filename, type, locale)
-          @github.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, target_file_path1 => file.content)[target_file_path1]
-        end
         metadata_path = @file_path_provider.metadata_path_for(id, type)
-
         metadata = @metadata_factory.from(get_metadata(metadata_path))
         metadata.add_public_language(locale) unless metadata.has_public_language?(locale)
 
-        @github.write_files(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)[metadata_path]
+        files = {
+          public_json_path => json_git_file.content,
+          metadata_path => metadata.to_json
+        }
+
+        @file_system.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, files)
 
         response = ServiceHttpResponseFactory.ok_response({
             versions: {
@@ -59,10 +57,18 @@ module Hacienda
       end
     end
 
+
     private
 
+    def write_html_files(html_files, locale, type)
+      html_files.each_pair do |filename, file|
+        target_file_path1 = @file_path_provider.public_path_for(filename, type, locale)
+        @file_system.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, target_file_path1 => file.content)[target_file_path1]
+      end
+    end
+
     def get_metadata(metadata_path)
-      JSON.parse(@github.get_content(metadata_path).content, symbolize_names: true)
+      JSON.parse(@file_system.get_content(metadata_path).content, symbolize_names: true)
     end
 
 
@@ -82,13 +88,13 @@ module Hacienda
 
       html_files = {}
       html_file_names.each do |filename|
-        html_files[filename] = @github.get_content(@file_path_provider.draft_path_for(filename, type, locale))
+        html_files[filename] = @file_system.get_content(@file_path_provider.draft_path_for(filename, type, locale))
       end
       html_files
     end
 
     def load_json_file(id, type, locale)
-      @github.get_content(@file_path_provider.draft_json_path_for(id, type, locale))
+      @file_system.get_content(@file_path_provider.draft_json_path_for(id, type, locale))
     end
 
 

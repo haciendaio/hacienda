@@ -45,9 +45,11 @@ module Hacienda
       else
         metadata = create_metadata(author)
       end
+
       written_files = file_system.write_files(description,
                                                json_file_path => @data.to_json,
                                                metadata_file_path => metadata.to_json)
+
       json_file_sha = written_files[json_file_path].sha
       content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
     end

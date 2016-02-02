@@ -13,8 +13,6 @@ module Hacienda
 
     describe PublishContentController do
 
-      let(:github) { double('github', write_files: {'' => {}}, update_content: nil, content_exists?: true, get_content: nil) }
-
       let(:file_system) { InMemoryFileSystem.new }
       let(:files) { file_system.test_api }
 
@@ -69,7 +67,7 @@ module Hacienda
 
         it 'should not add the public language if it already exists in the metadata' do
           metadata = metadata_factory.create('teas', 'es', datetime.to_s, 'some author').add_public_language('es')
-          github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata_file', content: metadata.to_json))
+          files.setup 'metadata/teas/tea-id.json' => metadata.to_json
 
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
           expect(files.content_of 'metadata/teas/tea-id.json').to eq metadata.to_json
