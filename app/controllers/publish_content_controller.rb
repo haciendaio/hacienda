@@ -32,8 +32,21 @@ module Hacienda
           raise Errors::PreconditionFailedError
         end
 
-        publish_files(html_files, id, json_git_file, type, locale)
-        update_metadata(id, type, locale)
+        files = {}
+
+        files[@file_path_provider.public_json_path_for(id, type, locale)] = json_git_file.content
+        @github.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, files)
+
+        html_files.each_pair do |filename, file|
+          target_file_path1 = @file_path_provider.public_path_for(filename, type, locale)
+          @github.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, target_file_path1 => file.content)[target_file_path1]
+        end
+        metadata_path = @file_path_provider.metadata_path_for(id, type)
+
+        metadata = @metadata_factory.from(get_metadata(metadata_path))
+        metadata.add_public_language(locale) unless metadata.has_public_language?(locale)
+
+        @github.write_files(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)[metadata_path]
 
         response = ServiceHttpResponseFactory.ok_response({
             versions: {
@@ -48,26 +61,10 @@ module Hacienda
 
     private
 
-    def update_metadata(id, type, locale)
-      metadata_path = @file_path_provider.metadata_path_for(id, type)
-
-      metadata = @metadata_factory.from(get_metadata(metadata_path))
-      metadata.add_public_language(locale) unless metadata.has_public_language?(locale)
-
-      @github.write_files(GENERIC_METADATA_CHANGED_COMMIT_MESSAGE, metadata_path => metadata.to_json)[metadata_path]
-    end
-
     def get_metadata(metadata_path)
       JSON.parse(@github.get_content(metadata_path).content, symbolize_names: true)
     end
 
-    def publish_files(html_files, id, json_git_file, type, locale)
-      publish_file_to_github(id, json_git_file.content, @file_path_provider.public_json_path_for(id, type, locale))
-
-      html_files.each_pair do |filename, file|
-        publish_file_to_github(id, file.content, @file_path_provider.public_path_for(filename, type, locale))
-      end
-    end
 
     def current_version(html_files, json_git_file)
       shas = []
@@ -94,9 +91,6 @@ module Hacienda
       @github.get_content(@file_path_provider.draft_json_path_for(id, type, locale))
     end
 
-    def publish_file_to_github(id, content, target_file_path)
-      @github.write_files(GENERIC_CONTENT_PUBLISHED_COMMIT_MESSAGE, target_file_path => content)[target_file_path]
-    end
 
   end
 end
