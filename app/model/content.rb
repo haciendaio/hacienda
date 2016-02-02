@@ -47,7 +47,7 @@ module Hacienda
                                                json_file_path => @data.to_json,
                                                metadata_file_path => metadata.to_json)
       json_file_sha = written_files[json_file_path].sha
-      content_version = content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
+      content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
     end
 
     def create_metadata(author)
