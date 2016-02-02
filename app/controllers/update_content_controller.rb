@@ -1,4 +1,3 @@
-require_relative '../metadata/metadata_factory'
 require_relative '../github/github_file_system'
 require_relative '../utilities/log'
 require_relative '../model/content'
@@ -15,7 +14,6 @@ module Hacienda
     def initialize(github, content_digest, content_store, log)
       @github = github
       @content_digest = content_digest
-      @metadata_factory = MetadataFactory.new
       @content_store = content_store
       @log = log
     end
@@ -24,11 +22,9 @@ module Hacienda
       content_data = JSON.parse(content_json)
       content = Content.build(id, content_data, type: type, locale: locale)
 
-      metadata_path = content.metadata_file_path
-
       Log.context action: 'updating content item', type: type, id: content.id do
         if content.exists_in? @github
-          response = update_content(author, content, id, locale, metadata_path, type)
+          response = update_content(author, content, id, locale, type)
         else
           response = ServiceHttpResponseFactory.not_found_response
         end
@@ -38,7 +34,7 @@ module Hacienda
 
     private
 
-    def update_content(author, content, id, locale, metadata_path, type)
+    def update_content(author, content, id, locale, type)
 
       updated_version = content.write_to @github, author, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, @content_digest
 
