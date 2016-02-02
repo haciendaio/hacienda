@@ -7,6 +7,7 @@ module Hacienda
       class TestFilesApi
         def initialize(files)
           @files = files
+          @has_been_written_to = false
         end
         def setup(files)
           @files.merge! files
@@ -23,6 +24,12 @@ module Hacienda
         def sha_of(path)
           "sha of #{path}"
         end
+        def has_been_written_to=(has)
+          @has_been_written_to = has
+        end
+        def has_been_written_to?
+          @has_been_written_to
+        end
       end
 
       def initialize
@@ -36,6 +43,7 @@ module Hacienda
       end
 
       def write_files(description, files)
+        test_api.has_been_written_to = true
         @files.merge! files
         stored_files = files.each_pair.map do |path, content|
           [path, stored_file(path)]

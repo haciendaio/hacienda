@@ -1,10 +1,10 @@
-require_relative '../unit_helper'
 require_relative '../../../app/controllers/publish_content_controller'
 require_relative '../../../app/services/file_path_provider'
 require_relative '../../../app/exceptions/not_found_exception'
 require_relative '../../../app/exceptions/precondition_failed_error'
 require_relative '../../../app/metadata/metadata_factory'
 require_relative 'service_http_response_double'
+require_relative '../github/in_memory_file_system'
 
 require 'json'
 
@@ -14,6 +14,10 @@ module Hacienda
     describe PublishContentController do
 
       let(:github) { double('github', write_files: {'' => {}}, update_content: nil, content_exists?: true, get_content: nil) }
+
+      let(:file_system) { InMemoryFileSystem.new }
+      let(:files) { file_system.test_api }
+
       let(:content_digest) { double('content_digest', generate_digest: 'correct_version') }
 
       let(:log) { double('log', warn: nil) }
@@ -26,21 +30,23 @@ module Hacienda
       let(:metadata_factory) { MetadataFactory.new }
       let(:datetime) { DateTime.new(2014, 1, 1) }
 
-      subject { PublishContentController.new(github, content_digest, log) }
+      subject { PublishContentController.new(file_system, content_digest, log) }
 
       context 'successful publish' do
 
         let(:metadata) { metadata_factory.create('teas', 'es', datetime.to_s, 'some author') }
 
         before :each do
-          github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata_file', content: metadata.to_json))
-          github.stub(:get_content).with('draft/es/teas/tea-id.json').and_return(draft_json_file)
-          github.stub(:get_content).with('draft/es/teas/tea-id-earl-grey.html').and_return(earl_grey_html)
+          files.setup({
+            'metadata/teas/tea-id.json' => metadata.to_json,
+            'draft/es/teas/tea-id.json' => draft_json_file.content,
+            'draft/es/teas/tea-id-earl-grey.html' => earl_grey_html.content
+          })
         end
 
         it 'should publish all referenced html files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:write_files).with(anything, 'public/es/teas/tea-id-earl-grey.html' => 'Earl Grey')
+          expect(files.content_of 'public/es/teas/tea-id-earl-grey.html').to eq 'Earl Grey'
         end
 
         it 'should return a draft version and a public version with the same sha' do
@@ -57,7 +63,8 @@ module Hacienda
 
         it 'should update the metadata when it publishes files' do
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:write_files).with(anything, 'metadata/teas/tea-id.json' => metadata.add_public_language('es').to_json)
+
+          expect(files.content_of 'metadata/teas/tea-id.json').to eq metadata.add_public_language('es').to_json
         end
 
         it 'should not add the public language if it already exists in the metadata' do
@@ -65,7 +72,7 @@ module Hacienda
           github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata_file', content: metadata.to_json))
 
           subject.publish('teas', 'tea-id', 'correct_version', 'es')
-          expect(github).to have_received(:write_files).with(anything, 'metadata/teas/tea-id.json' => metadata.to_json)
+          expect(files.content_of 'metadata/teas/tea-id.json').to eq metadata.to_json
         end
 
       end
@@ -75,17 +82,18 @@ module Hacienda
         let(:metadata) { metadata_factory.create('teas', 'es', datetime.to_s, 'some author') }
 
         before :each do
-          github.stub(:get_content).with('metadata/teas/tea-id.json').and_return(double('metadata', content: metadata.to_json))
-          github.stub(:get_content).with('draft/es/teas/tea-id.json').and_return(draft_json_file)
-          github.stub(:get_content).with('draft/es/teas/tea-id-earl-grey.html').and_return(earl_grey_html)
+          files.setup({
+            'metadata/teas/tea-id.json' => metadata.to_json,
+            'draft/es/teas/tea-id.json' => draft_json_file.content,
+            'draft/es/teas/tea-id-earl-grey.html' => earl_grey_html.content
+          })
         end
 
         it 'should not publish files and throw exception' do
           expect {
             subject.publish('teas', 'tea-id', 'wrong_version', 'es')
           }.to raise_error(Errors::PreconditionFailedError)
-
-          expect(github).not_to have_received(:write_files)
+          expect(files).to_not have_been_written_to
         end
 
       end
