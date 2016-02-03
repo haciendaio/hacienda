@@ -41,6 +41,7 @@ module Hacienda
     get '/status' do
       '{"status":"OK"}'
     end
+    existing_item_regex = %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$}
 
     #Content Updated
 
@@ -51,23 +52,31 @@ module Hacienda
 
     #Updating Generic
 
-    put %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$}, auth: true do
+    put existing_item_regex, auth: true do
       type, id, locale = params[:captures]
       sinatra_response(update_content_controller.update(type, id, params[:data], locale, request.env['HTTP_LAST_MODIFIED_BY']))
+
+      local_content_repo.pull_latest_content
     end
 
     #Publishing Generic
 
-    post %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$}, auth: true do
+    post existing_item_regex, auth: true do
       type, id, locale = params[:captures]
       sinatra_response(publish_content_controller.publish(type, id, request.env['HTTP_IF_MATCH'], locale))
+
+      local_content_repo.pull_latest_content
     end
 
     #Create
 
-    post %r{/(.+)/#{ALLOWED_LOCALES_REGEX}$}, auth: true do
+    create_item_regexp = %r{/(.+)/#{ALLOWED_LOCALES_REGEX}$}
+
+    post create_item_regexp, auth: true do
       type, locale = params[:captures]
       sinatra_response(create_content_controller.create(type, params[:data], locale, request.env['HTTP_LAST_MODIFIED_BY']))
+
+      local_content_repo.pull_latest_content
     end
 
     #Finding all Generic
@@ -92,21 +101,24 @@ module Hacienda
 
     #Getting history of an item
 
-    get %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$} do
-      type, id, locale = params[:captures]
+    get existing_item_regex do type, id, locale = params[:captures]
       changes_in_the_past = (-1)*request.env['rack.request.query_hash']['v'].to_i
       draft_content_store.find_locale_resource(type, id, locale, changes_in_the_past)
     end
 
     #Delete
 
-    delete %r{/(.+)/(.+)/#{ALLOWED_LOCALES_REGEX}$} do
+    delete existing_item_regex do
       type, id, locale = params[:captures]
       sinatra_response(delete_content_controller.delete(id, type, locale))
+
+      local_content_repo.pull_latest_content
     end
 
     delete '/:type/:id' do
       sinatra_response(delete_content_controller.delete_all(params[:type], params[:id]))
+
+      local_content_repo.pull_latest_content
     end
 
     #Errors
