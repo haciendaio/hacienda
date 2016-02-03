@@ -124,7 +124,7 @@ module Hacienda
     end
 
     def get_accept_language
-      accepted_values = ['en','es','pt','de']
+      accepted_values = %w(en es pt de cn)
       passed_locale = request.env['HTTP_ACCEPT_LANGUAGE']
       accepted_values.include?(passed_locale) ? passed_locale : 'en'
     end
