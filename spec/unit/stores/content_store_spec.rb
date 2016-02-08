@@ -51,8 +51,8 @@ module Hacienda
         let(:rabbit) { {id: 'rabbit'} }
         let(:draft_data) do
           {
-            'cat' => cat,
-            'rabbit' => rabbit
+              'cat' => cat,
+              'rabbit' => rabbit
           }
         end
 
