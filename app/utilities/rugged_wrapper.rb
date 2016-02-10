@@ -20,8 +20,9 @@ module Hacienda
 
     def get_repo
       repo = Repository.new(@repo_path)
-      yield(repo)
+      result = yield(repo)
       repo.close
+      return result
     end
 
     def get_wrapper_for_repo repo
@@ -29,7 +30,7 @@ module Hacienda
     end
 
     def sha_for(item_path)
-      get_repo do |repo| 
+      return get_repo do |repo| 
         repo.head.target.tree.path(item_path)[:oid]
       end
     end
@@ -37,7 +38,7 @@ module Hacienda
     def get_version_in_past(file_path, changes_in_the_past)
       raise ArgumentError if changes_in_the_past < 0
 
-      get_repo do |repo|  
+      return get_repo do |repo|  
         walker = get_wrapper_for_repo(repo)
         walker.push(repo.last_commit)
 
@@ -56,8 +57,8 @@ module Hacienda
           break if (changes_in_the_past == 0)
           break unless last_blob
         end
+        return changes_in_the_past == 0 ? last_blob : nil
       end
-      changes_in_the_past == 0 ? last_blob : nil
     end
   end
 
