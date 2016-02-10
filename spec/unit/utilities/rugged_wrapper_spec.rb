@@ -8,29 +8,35 @@ module Hacienda
 
         before :each do
           @file_path = 'file/path'
-          @rugged_wrapper = RuggedWrapper.new('some/repo/path')
+          
           @walker = MockRuggedWalker.new([make_commit_with_oid('a commit'), make_commit_with_oid('another commit'), make_commit_with_oid('yet another commit')])
-          @repo = double('Rugged::Repository', last_commit: make_commit_with_oid('last commit'))
+          @repo = double('Rugged::Repository', last_commit: make_commit_with_oid('last commit'), close: nil)
           @repo.stub(:blob_at).with('last commit', @file_path).and_return(make_blob_with_oid('last commit content'))
           @repo.stub(:blob_at).with('second to last commit', @file_path).and_return(make_blob_with_oid('last commit content'))
           @repo.stub(:blob_at).with('another commit', @file_path).and_return(make_blob_with_oid('another commit content'))
           @repo.stub(:blob_at).with('yet another commit', @file_path).and_return(make_blob_with_oid('yet another commit content'))
+          @rugged_wrapper = RuggedWrapper.new(repo: @repo, walker: @walker)
         end
 
         it 'should return the last commit when looking for 0 versions in the past' do
-          expect(@rugged_wrapper.get_version_in_past(@file_path, 0, @repo, @walker).oid).to eq 'last commit content'
+          expect(@rugged_wrapper.get_version_in_past(@file_path, 0).oid).to eq 'last commit content'
         end
 
         it 'should return the second to last commit when looking for 1 version in the past' do
-          expect(@rugged_wrapper.get_version_in_past(@file_path, 1, @repo, @walker).oid).to eq 'another commit content'
+          expect(@rugged_wrapper.get_version_in_past(@file_path, 1).oid).to eq 'another commit content'
         end
 
         it 'should return the nil when looking for a lot of versions in the past' do
-          expect(@rugged_wrapper.get_version_in_past(@file_path, 10, @repo, @walker)).to be_nil
+          expect(@rugged_wrapper.get_version_in_past(@file_path, 10)).to be_nil
         end
 
         it 'should throw invalid argument when the version is a negative number' do
-          expect { @rugged_wrapper.get_version_in_past(@file_path, -10, @repo, @walker) }.to raise_error
+          expect { @rugged_wrapper.get_version_in_past(@file_path, -10) }.to raise_error
+        end
+        
+        it('should close the repository after completion') do
+          @rugged_wrapper.get_version_in_past(@file_path, 0)
+          expect(@repo).to have_received(:close)
         end
 
         def make_blob_with_oid oid

@@ -14,19 +14,21 @@ module Hacienda
 
     include Rugged
 
-    def initialize(repo_path)
+    def initialize(repo_path = nil, repo: nil, walker: nil)
       @repo_path = repo_path
+      @repo = repo
+      @walker = walker
     end
-
+    
     def get_repo
-      repo = Repository.new(@repo_path)
-      result = yield(repo)
-      repo.close
+      @repo ||= Repository.new(@repo_path)
+      result = yield(@repo)
+      @repo.close
       return result
     end
 
     def get_wrapper_for_repo repo
-      Rugged::Walker.new(repo)
+      @walker ||= Rugged::Walker.new(repo)
     end
 
     def sha_for(item_path)
