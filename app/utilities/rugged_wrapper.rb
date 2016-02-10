@@ -38,7 +38,7 @@ module Hacienda
       raise ArgumentError if changes_in_the_past < 0
 
       get_repo do |repo|  
-        walker = get_wrapper_for_repo(repo))
+        walker = get_wrapper_for_repo(repo)
         walker.push(repo.last_commit)
 
         last_blob = repo.blob_at(repo.last_commit.oid, file_path)
