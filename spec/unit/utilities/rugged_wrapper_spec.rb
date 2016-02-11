@@ -15,7 +15,7 @@ module Hacienda
           @repo.stub(:blob_at).with('second to last commit', @file_path).and_return(make_blob_with_oid('last commit content'))
           @repo.stub(:blob_at).with('another commit', @file_path).and_return(make_blob_with_oid('another commit content'))
           @repo.stub(:blob_at).with('yet another commit', @file_path).and_return(make_blob_with_oid('yet another commit content'))
-          @rugged_wrapper = RuggedWrapper.new(repo: @repo, walker: @walker)
+          @rugged_wrapper = RuggedWrapper.new(nil, lambda{|path| @repo}, lambda{|repo| @walker})
         end
 
         it 'should return the last commit when looking for 0 versions in the past' do

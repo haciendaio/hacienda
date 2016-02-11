@@ -4,7 +4,9 @@ module Hacienda
     class TestRuggedWrapper < RuggedWrapper
 
       def initialize(repo_path)
-        super(repo_path)
+        super(repo_path, 
+              lambda{|path| Repository.new(path)},
+              lambda{|repo| Rugged::Walker.new(repo)})
       end
 
       def self.init_git_repo(repo_path)

@@ -1,11 +1,15 @@
 require 'rugged'
 
 module Hacienda
-
+  
   class RuggedWrapperFactory
 
+    include Rugged
+
     def get_repo(repo_path)
-      RuggedWrapper.new(repo_path)
+      RuggedWrapper.new(repo_path, 
+                        lambda{|path| Repository.new(path)},
+                        lambda{|repo| Rugged::Walker.new(repo)})
     end
 
   end
@@ -14,21 +18,21 @@ module Hacienda
 
     include Rugged
 
-    def initialize(repo_path = nil, repo: nil, walker: nil)
+    def initialize(repo_path, create_repo, create_walker)
       @repo_path = repo_path
-      @repo = repo
-      @walker = walker
+      @create_repo = create_repo
+      @create_walker = create_walker
     end
     
     def get_repo
-      @repo ||= Repository.new(@repo_path)
+      @repo ||= @create_repo[@repo_path]
       result = yield(@repo)
       @repo.close
       return result
     end
 
     def get_wrapper_for_repo repo
-      @walker ||= Rugged::Walker.new(repo)
+      @walker ||= @create_walker[repo]
     end
 
     def sha_for(item_path)
