@@ -23,7 +23,8 @@ module Hacienda
 
     def pull_latest_content
       status = @executor.run('git status', in: @data_dir)
-      @log.debug(status)
+      @log.debug('NB This status is executed outside of single-process locking, so may represent intermediate state of ' +
+                     "ongoing pull:\n #{status}")
 
       @executor.run('git checkout master', in: @data_dir) unless status.include? 'On branch master'
 
