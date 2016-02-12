@@ -55,7 +55,6 @@ module Hacienda
     put existing_item_regex, auth: true do
       type, id, locale = params[:captures]
       put_response = update_content_controller.update(type, id, params[:data], locale, request.env['HTTP_LAST_MODIFIED_BY'])
-      local_content_repo.pull_latest_content
 
       sinatra_response(put_response)
     end
@@ -65,7 +64,6 @@ module Hacienda
     post existing_item_regex, auth: true do
       type, id, locale = params[:captures]
       publish_response = publish_content_controller.publish(type, id, request.env['HTTP_IF_MATCH'], locale)
-      local_content_repo.pull_latest_content
 
       sinatra_response(publish_response)
     end
@@ -77,7 +75,6 @@ module Hacienda
     post create_item_regexp, auth: true do
       type, locale = params[:captures]
       create_response = create_content_controller.create(type, params[:data], locale, request.env['HTTP_LAST_MODIFIED_BY'])
-      local_content_repo.pull_latest_content
 
       sinatra_response(create_response)
     end
@@ -114,14 +111,12 @@ module Hacienda
     delete existing_item_regex do
       type, id, locale = params[:captures]
       delete_response = delete_content_controller.delete(id, type, locale)
-      local_content_repo.pull_latest_content
 
       sinatra_response(delete_response)
     end
 
     delete '/:type/:id' do
       delete_response = delete_content_controller.delete_all(params[:type], params[:id])
-      local_content_repo.pull_latest_content
 
       sinatra_response(delete_response)
     end
