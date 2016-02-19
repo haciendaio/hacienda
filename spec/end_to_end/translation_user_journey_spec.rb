@@ -64,7 +64,7 @@ module Hacienda
         spanish_item = get_draft_translated_item_by_id(type, bananarama_id, 'en')
         expect(spanish_item[:title]).to eq 'spanish bananarama'
 
-        update_item(type, {id: bananarama_id, title: 'english bananarama'}, authorised_client_data, 'en')
+        update_item(type, {id: bananarama_id, title: 'english bananarama'}, 'en', authorised_client_data)
         content_updated
 
         english_item = get_draft_translated_item_by_id(type, bananarama_id, 'cn')
@@ -100,7 +100,7 @@ module Hacienda
       end
 
       def update_publish_and_request_PT_item(type, bananarama_id)
-        update_item(type, {id: bananarama_id, title: 'portuguese bananarama'}, authorised_client_data, 'pt')
+        update_item(type, {id: bananarama_id, title: 'portuguese bananarama'}, 'pt', authorised_client_data)
         content_updated
 
         portuguese_resource = get_draft_translated_item_by_id(type, bananarama_id, 'pt')
