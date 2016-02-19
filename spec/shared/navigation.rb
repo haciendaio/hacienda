@@ -66,7 +66,7 @@ module Hacienda
                     headers)
       end
 
-      def update_item(type, item_data, authorisation_data, locale)
+      def update_item(type, item_data, locale, authorisation_data)
         content = prepare_content(item_data)
         headers = authorisation_headers(content, authorisation_data).merge({'Username' => 'bob'})
         client.put("/#{type}/#{item_data[:id]}/#{locale}",
@@ -121,6 +121,7 @@ module Hacienda
       end
 
       def authorisation_headers(content, authorisation_data)
+        return {} if authorisation_data.nil?
         {
             'authorization' => "HMAC #{create_authorisation_hash(content, authorisation_data)}",
             'nonce' => authorisation_data[:nonce],

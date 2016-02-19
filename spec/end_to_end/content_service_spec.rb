@@ -84,7 +84,7 @@ module Hacienda
         it 'should save the inline fields of an item' do
           add_test_content_item('paper', 'editable-item', 'cn', existing_item)
 
-          response = update_item('paper', item_for_saving, authorised_client_data, 'cn')
+          response = update_item('paper', item_for_saving, 'cn', authorised_client_data)
 
           expect(response.status).to eq 200
           expect(response.headers['ETag']).not_to be_nil, 'The ETag with content version should be present'
@@ -99,7 +99,7 @@ module Hacienda
        it 'should return a 401 when the authorisation is incorrect' do
           item_we_are_not_allowed_to_update = {id: 'test-authorisation-failure'}
 
-          response = update_item('paper', item_we_are_not_allowed_to_update, @non_authorised_client_data, 'en')
+          response = update_item('paper', item_we_are_not_allowed_to_update, 'en', @non_authorised_client_data)
 
           response.status.should eq 401
         end
@@ -108,7 +108,7 @@ module Hacienda
           add_test_content_item('paper', 'test-authorisation-success', 'pt', existing_item)
 
           updated_item = {id: 'test-authorisation-success'}
-          response = update_item('paper', updated_item, authorised_client_data, 'pt')
+          response = update_item('paper', updated_item, 'pt', authorised_client_data)
 
           response.status.should eq 200
         end

@@ -34,7 +34,7 @@ module Hacienda
 
       def update(content, options = {})
         content.merge!(locale: options[:in]) if options[:in]
-        @ApiClient.update_item(content[:type], content, @authorised_client_data, content[:locale])
+        @ApiClient.update_item(content[:type], content, content[:locale], @authorised_client_data)
       end
 
       def publish(content, options = {})
