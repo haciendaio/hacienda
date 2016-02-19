@@ -108,14 +108,14 @@ module Hacienda
 
     #Delete
 
-    delete existing_item_regex do
+    delete existing_item_regex, auth: true do
       type, id, locale = params[:captures]
       delete_response = delete_content_controller.delete(id, type, locale)
 
       sinatra_response(delete_response)
     end
 
-    delete '/:type/:id' do
+    delete '/:type/:id', auth: true do
       delete_response = delete_content_controller.delete_all(params[:type], params[:id])
 
       sinatra_response(delete_response)

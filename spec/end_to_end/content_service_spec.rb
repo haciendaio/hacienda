@@ -31,23 +31,17 @@ module Hacienda
       end
 
       let(:existing_item) do
-        {
-            id: 'editable-item',
-            subtitle: 'subtitle',
-            title: 'title',
-            date: @date,
-            location: 'location',
-            content_body_html: '<p>Boring stuff</p>'
-        }
+        @existing_item
       end
 
-      let(:authorised_client_data) do {
-	      nonce: '84024B89D',
-	      client_id: @client_id,
-	      timestamp: Time.now.to_i.to_s,
-	      secret: @client_secret	
-	}
-	end
+      let(:authorised_client_data) do
+        {
+          nonce: '84024B89D',
+          client_id: @client_id,
+          timestamp: Time.now.to_i.to_s,
+          secret: @client_secret
+        }
+	    end
 
       before :all do
         fake_settings = FakeConfigLoader.new.load_config 'test'
@@ -67,6 +61,16 @@ module Hacienda
         }
 
         @date = '09/04/2013'
+
+        @existing_item = {
+            id: 'editable-item',
+            subtitle: 'subtitle',
+            title: 'title',
+            date: @date,
+            location: 'location',
+            content_body_html: '<p>Boring stuff</p>'
+        }
+
 
         add_credentials_to_test_keys @client_id, @client_secret
       end
@@ -137,12 +141,28 @@ module Hacienda
 
       context 'content item delete' do
 
-        it 'should delete an item' do
-          type = 'bananas'
-          id = 'good_banana'
-          add_test_content_item(type, id, 'en', existing_item)
-          add_test_content_item(type, id, 'en', existing_item, 'public')
+        before do
+          @type = 'bananas'
+          @id ='good_banana'
 
+          add_test_content_item(@type, @id, 'en', @existing_item)
+          add_test_content_item(@type, @id, 'en', @existing_item, 'public')
+        end
+
+        let(:type) { @type }
+        let(:id ) { @id }
+
+        it 'does not allow unauthorized deletion in a specific locale' do
+          response = delete_item_with_locale(type, id, @non_authorised_client_data, 'en')
+          expect(response.status).to eq 401
+        end
+
+        it 'does not allow unauthorized deletion of all locales of item' do
+          response = delete_item(type, id, @non_authorised_client_data)
+          expect(response.status).to eq 401
+        end
+
+        it 'should delete an item' do
           response = delete_item_with_locale(type, id, authorised_client_data, 'en')
           expect(response.status).to eq 204
 
