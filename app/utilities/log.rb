@@ -9,14 +9,16 @@ module Hacienda
       begin
         existing = Thread.current[:logging_context]
         Thread.current[:logging_context] = existing.nil? ? info : existing.merge(info)
-        return_value = yield
+        return_value = yield if block_given?
       ensure
-        Thread.current[:logging_context] = existing
+        Thread.current[:logging_context] = existing if block_given?
       end
       return_value
     end
 
-    
+    def self.clear_context
+      Thread.current[:logging_context] = nil
+    end
     
     def self.context_info
       Thread.current[:logging_context]
