@@ -53,6 +53,27 @@ module Hacienda
           expect(log_file).to include '(doing: foobar, id: yahoo) some log'
         end
 
+        it 'should provide information from nested contexts' do
+          Log.context(outer: 'foo') do
+            Log.context(inner: 'bah') do
+              some_method_that_will_log('a line')
+            end
+          end
+        
+          expect(log_file).to include '(outer: foo, inner: bah) a line'
+        end
+
+        it 'should provide outer context information after exiting nested contexts' do
+          Log.context(outer: 'foo') do
+            Log.context(inner: 'bah') do
+              # inner
+            end
+            some_method_that_will_log('after inner but in outer')
+          end
+
+          expect(log_file).to include '(outer: foo) after inner but in outer'
+        end
+
         private
 
         def log_file

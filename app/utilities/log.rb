@@ -7,14 +7,17 @@ module Hacienda
 
     def self.context(info={})
       begin
-        Thread.current[:logging_context] = info
+        existing = Thread.current[:logging_context]
+        Thread.current[:logging_context] = existing.nil? ? info : existing.merge(info)
         return_value = yield
       ensure
-        Thread.current[:logging_context] = nil
+        Thread.current[:logging_context] = existing
       end
       return_value
     end
 
+    
+    
     def self.context_info
       Thread.current[:logging_context]
     end
