@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.license       = 'AGPL'
 
   s.add_dependency 'sinatra',         '~> 1.4.3'
-  s.add_dependency 'sinatra-contrib', '~> 1.4.1'
+  s.add_dependency 'sinatra-contrib', '~> 1.4.7'
   s.add_dependency 'json',            '~> 1.8.3'
   s.add_dependency 'multi_json'
   s.add_dependency 'octokit',         '~> 2.5.1'
