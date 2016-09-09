@@ -34,7 +34,7 @@ module Hacienda
         end
 
         def delete(path, additional_headers = {})
-          send_request(:delete, path, additional_headers)
+          send_request(:delete, path, {}, additional_headers)
         end
 
         def post(path, params, additional_headers = {})

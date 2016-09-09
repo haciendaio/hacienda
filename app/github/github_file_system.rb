@@ -15,7 +15,7 @@ require_relative 'git_file'
 
 module Hacienda
 
-  class Github
+  class GithubFileSystem
 
     include ExecutionTimeLogger
     include Retry
@@ -26,18 +26,29 @@ module Hacienda
       @github_client = github_client
     end
 
-    def create_content(path, content, commit_message = '')
-
-      content_reference = @github_client.create_blob(content)
+    def write_files(description, items = {})
+      raise "Need some content items to create" if items.empty?
 
       log_execution_time_of('Changing remote content') do
         retry_for_a_number_of_attempts(3, Octokit::UnprocessableEntity) do
 
-          commit_reference = create_commit_reference(commit_message, content_reference, path)
+          head_reference = @github_client.get_head_reference
+          base_tree_reference = @github_client.get_tree(head_reference)
+
+          paths_to_refs = {}
+          items.each_pair do |path, content|
+            paths_to_refs[path] = @github_client.create_blob(content)
+          end
+
+          tree_reference = @github_client.create_tree(base_tree_reference, paths_to_refs)
+          create_commit_reference_value = @github_client.create_commit(head_reference, tree_reference, description)
+          commit_reference = create_commit_reference_value
 
           @github_client.update_head_ref_to(commit_reference)
 
-          GitFile.new(content, path, content_reference)
+          paths_to_refs.map {|path, content_reference|
+            [path, GitFile.new(items[path], path, content_reference)]
+          }.to_h
         end
       end
     end
@@ -99,14 +110,6 @@ module Hacienda
       end
     end
 
-    private
 
-    def create_commit_reference(commit_message, content_reference, path)
-      head_reference = @github_client.get_head_reference
-
-      base_tree_reference = @github_client.get_tree(head_reference)
-      tree_reference = @github_client.create_tree(base_tree_reference, content_reference, path)
-      @github_client.create_commit(head_reference, tree_reference, commit_message)
-    end
   end
 end

@@ -11,7 +11,7 @@ module Hacienda
 
     include ExecutionTimeLogger
 
-    def initialize(state, query, content_handlers, file_data_store, log, local_git_repo = nil, translation_store = TranslationStore.new(file_data_store))
+    def initialize(state, query, content_handlers, file_data_store, log, local_git_repo = nil, translation_store = TranslationStore.new(file_data_store, log))
       @state = state
       @query = query
       @content_handlers = content_handlers

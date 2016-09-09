@@ -27,8 +27,11 @@ module Hacienda
       @oktokit_client.create_tree(content_repo, new_tree, {:base_tree => base_tree.reference})
     end
 
-    def create_tree(base_tree_reference, content_reference, path)
-      @octokit_client.create_tree(content_repo, [{ path: path, mode: '100644', type: 'blob', sha: content_reference }], {:base_tree => base_tree_reference}).sha
+    def create_tree(base_tree_reference, items)
+      defs = items.keys.map { |path|
+        { path: path, mode: '100644', type: 'blob', sha: items[path] }
+      }
+      @octokit_client.create_tree(content_repo, defs, {:base_tree => base_tree_reference}).sha
     end
 
     def create_commit(head_reference, tree_reference, commit_message)
@@ -50,6 +53,7 @@ module Hacienda
     def delete_content(path, sha, message)
       @octokit_client.delete_contents(content_repo, path, message, sha)
     end
+
     private
 
     def content_repo

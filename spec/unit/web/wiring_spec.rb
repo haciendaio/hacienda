@@ -59,7 +59,7 @@ module Hacienda
 
       it 'should return content service controller' do
         expect(app.create_content_controller).to be_a CreateContentController
-        expect(app.create_content_controller.instance_variable_get(:@github)).to be_a Github
+        expect(app.create_content_controller.instance_variable_get(:@file_system)).to be_a GithubFileSystem
       end
 
       it 'should return a content update controller using draft content store... cos public doesnt return version info
@@ -68,10 +68,16 @@ module Hacienda
         expect(app.update_content_controller.instance_variable_get(:@content_store).instance_variable_get(:@state)).to eq :draft
       end
 
-      it 'should return github with a github_client' do
-        github = app.github
-        expect(github).to be_a Github
-        expect(github.instance_variable_get(:@github_client)).to be_a GithubClient
+      it 'should log github_client calls' do
+        github = app.github_file_system
+        expect(github).to be_a GithubFileSystem
+        expect(github.instance_variable_get(:@github_client)).to be_a LoggingGithubClient
+      end
+
+      it 'should wire up logging github_client correctly' do
+        github = app.logging_github_client
+        expect(github).to be_a LoggingGithubClient
+        expect(github.instance_variable_get(:@client)).to be_a GithubClient
       end
 
       it 'should return a content file store' do

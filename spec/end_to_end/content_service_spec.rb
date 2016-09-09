@@ -31,30 +31,24 @@ module Hacienda
       end
 
       let(:existing_item) do
-        {
-            id: 'editable-item',
-            subtitle: 'subtitle',
-            title: 'title',
-            date: @date,
-            location: 'location',
-            content_body_html: '<p>Boring stuff</p>'
-        }
+        @existing_item
       end
 
-      let(:authorised_client_data) do {
-	      nonce: '84024B89D',
-	      client_id: @client_id,
-	      timestamp: Time.now.to_i.to_s,
-	      secret: @client_secret	
-	}
-	end
+      let(:authorised_client_data) do
+        {
+          nonce: '84024B89D',
+          client_id: @client_id,
+          timestamp: Time.now.to_i.to_s,
+          secret: @client_secret
+        }
+	    end
 
       before :all do
         fake_settings = FakeConfigLoader.new.load_config 'test'
 
         @service_runner = run_local_service
 
-        @test_github = Github.new(fake_settings, GithubClient.new(fake_settings))
+        @test_github = GithubFileSystem.new(fake_settings, GithubClient.new(fake_settings))
 
         @client_id = SecureRandom.hex(32).upcase
         @client_secret = SecureRandom.hex(32).upcase
@@ -68,6 +62,16 @@ module Hacienda
 
         @date = '09/04/2013'
 
+        @existing_item = {
+            id: 'editable-item',
+            subtitle: 'subtitle',
+            title: 'title',
+            date: @date,
+            location: 'location',
+            content_body_html: '<p>Boring stuff</p>'
+        }
+
+
         add_credentials_to_test_keys @client_id, @client_secret
       end
 
@@ -80,7 +84,7 @@ module Hacienda
         it 'should save the inline fields of an item' do
           add_test_content_item('paper', 'editable-item', 'cn', existing_item)
 
-          response = update_item('paper', item_for_saving, authorised_client_data, 'cn')
+          response = update_item('paper', item_for_saving, 'cn', authorised_client_data)
 
           expect(response.status).to eq 200
           expect(response.headers['ETag']).not_to be_nil, 'The ETag with content version should be present'
@@ -95,7 +99,7 @@ module Hacienda
        it 'should return a 401 when the authorisation is incorrect' do
           item_we_are_not_allowed_to_update = {id: 'test-authorisation-failure'}
 
-          response = update_item('paper', item_we_are_not_allowed_to_update, @non_authorised_client_data, 'en')
+          response = update_item('paper', item_we_are_not_allowed_to_update, 'en', @non_authorised_client_data)
 
           response.status.should eq 401
         end
@@ -104,7 +108,7 @@ module Hacienda
           add_test_content_item('paper', 'test-authorisation-success', 'pt', existing_item)
 
           updated_item = {id: 'test-authorisation-success'}
-          response = update_item('paper', updated_item, authorised_client_data, 'pt')
+          response = update_item('paper', updated_item, 'pt', authorised_client_data)
 
           response.status.should eq 200
         end
@@ -137,12 +141,28 @@ module Hacienda
 
       context 'content item delete' do
 
-        it 'should delete an item' do
-          type = 'bananas'
-          id = 'good_banana'
-          add_test_content_item(type, id, 'en', existing_item)
-          add_test_content_item(type, id, 'en', existing_item, 'public')
+        before do
+          @type = 'bananas'
+          @id ='good_banana'
 
+          add_test_content_item(@type, @id, 'en', @existing_item)
+          add_test_content_item(@type, @id, 'en', @existing_item, 'public')
+        end
+
+        let(:type) { @type }
+        let(:id ) { @id }
+
+        it 'does not allow unauthorized deletion in a specific locale' do
+          response = delete_item_with_locale(type, id, @non_authorised_client_data, 'en')
+          expect(response.status).to eq 401
+        end
+
+        it 'does not allow unauthorized deletion of all locales of item' do
+          response = delete_item(type, id, @non_authorised_client_data)
+          expect(response.status).to eq 401
+        end
+
+        it 'should delete an item' do
           response = delete_item_with_locale(type, id, authorised_client_data, 'en')
           expect(response.status).to eq 204
 

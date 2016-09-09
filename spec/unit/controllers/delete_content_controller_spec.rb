@@ -12,7 +12,7 @@ module Hacienda
       let(:log) { double('Log', info: '') }
       let(:metadata_factory) { double('MetadataFactory', from: metadata) }
       let(:metadata) { double('Metadata', has_languages?: false, remove_for_locale: nil) }
-      let(:github) { double('github', delete_content: '', get_content: double('GitFile', content: '{}'), create_content: '') }
+      let(:github) { double('github', delete_content: '', get_content: double('GitFile', content: '{}'), write_files: {''=>''}) }
       let(:file_provider) { double('FilePathProvider', draft_json_path_for: '', public_json_path_for: '', metadata_path_for: 'path/for/metadata') }
 
       let(:delete_content_controller) { DeleteContentController.new(github, log, file_provider, metadata_factory) }
@@ -77,7 +77,7 @@ module Hacienda
           delete_content_controller.delete(id, type, 'pt')
 
           expect(metadata).to have_received(:remove_for_locale).with('pt')
-          expect(github).to have_received(:create_content).with(metadata_path, 'some json representation', 'Updated metadata file')
+          expect(github).to have_received(:write_files).with('Updated metadata file', metadata_path => 'some json representation')
         end
 
         it 'should set the response code to 404 when there is no item in draft or public' do

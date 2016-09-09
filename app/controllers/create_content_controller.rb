@@ -1,11 +1,9 @@
-require_relative '../github/github'
+require_relative '../github/github_file_system'
 require_relative '../utilities/log'
 require_relative '../model/content'
 require_relative '../exceptions/unprocessable_entity_error'
-require_relative '../metadata/metadata'
-require_relative '../services/file_path_provider'
-require_relative '../metadata/metadata_factory'
 require_relative '../web/service_http_response'
+require_relative '../model/content_factory'
 require 'json'
 
 module Hacienda
@@ -13,65 +11,46 @@ module Hacienda
   class CreateContentController
 
     GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE = 'Content item created'
-    GENERIC_METADATA_CREATED_COMMIT_MESSAGE = 'Created metadata file'
 
-    def initialize(github, content_digest)
-      @github = github
+    def initialize(file_system, content_digest, content_factory: ContentFactory.new)
+      @file_system = file_system
       @content_digest = content_digest
-      @file_path_provider = FilePathProvider.new
-      @metadata_factory = MetadataFactory.new
+      @content_factory = content_factory
     end
 
-    def create(type, data, locale, author)
+    def create(type, content_json, locale, author)
 
-      content = Content.from_create(data)
+      content_data = JSON.parse(content_json)
+      id = content_data['id']
 
-      json_path = @file_path_provider.draft_json_path_for(content.id, type, locale)
-      metadata_path = @file_path_provider.metadata_path_for(content.id, type)
+      content = @content_factory.instance(id, content_data, type: type, locale: locale)
 
       Log.context action: 'creating', id: content.id do
-
-        if @github.content_exists?(metadata_path)
-          response = ServiceHttpResponseFactory.conflict_response
+        if content.exists_in?(@file_system)
+          ServiceHttpResponseFactory.conflict_response
         else
-          sha_of_referenced_files = content.referenced_files.collect { |item| create_html_file(item, type, locale).sha }
-          json_file_sha = create_json_file(content.data, json_path).sha
-
-          create_metadata_file(content, locale, metadata_path, author)
-
-          draft_version = @content_digest.generate_digest(sha_of_referenced_files.unshift(json_file_sha))
-
-          response = ServiceHttpResponseFactory.created_response({
-            versions: {
-              draft: draft_version,
-              public: nil
-            }
-          }.to_json)
-
-          response.etag = draft_version
-          response.location = "#{type}/#{content.id}/#{locale}"
-          response.content_type = 'application/json'
+          draft_version = content.write_to(@file_system, author, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE, @content_digest)
+          create_response(content, draft_version)
         end
-
-        response
       end
 
     end
 
-    private
-
-    def create_metadata_file(content, locale, path, author)
-      metadata = @metadata_factory.create(content.id, locale, DateTime.now, author)
-      @github.create_content(path, metadata.to_json, GENERIC_METADATA_CREATED_COMMIT_MESSAGE)
+    def create_response(content, draft_version)
+      response_data = {
+          versions: {
+              draft: draft_version,
+              public: nil
+          }
+      }
+      update_headers(ServiceHttpResponseFactory.created_response(response_data.to_json), content, draft_version)
     end
 
-    def create_json_file(data_hash, path)
-      @github.create_content(path, data_hash.to_json, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
-    end
-
-    def create_html_file(item, type, locale)
-      file_path = @file_path_provider.draft_path_for(item.file_name, type, locale)
-      @github.create_content(file_path, item.value, GENERIC_CONTENT_CHANGED_COMMIT_MESSAGE)
+    def update_headers(response, content, draft_version)
+      response.etag = draft_version
+      response.location = "#{content.type}/#{content.id}/#{content.locale}"
+      response.content_type = 'application/json'
+      response
     end
 
   end
