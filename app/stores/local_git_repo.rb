@@ -8,6 +8,9 @@ require 'rugged'
 
 module Hacienda
   class LocalGitRepo
+    MUTEX = Thread::Mutex.new
+    private_constant :MUTEX
+
     include ExecutionTimeLogger
 
     def initialize(data_dir, settings, executor=ShellExecutor.new, log=Log.new(settings), file_obj=File)
@@ -31,7 +34,7 @@ module Hacienda
       if @file_obj.exists? "#{@data_dir}/refs/heads/master.lock"
         @log.info('The master is locked due to an existing pull so not attempting to pull again')
       else
-        Thread.exclusive do
+        MUTEX.synchronize do
           log_execution_time_of "Pulling into #{@data_dir}" do
             output = @executor.run(git_pull_command, in: @data_dir)
             @log.info("Succeeded with output:\n#{output}")
