@@ -1,4 +1,5 @@
-[![Build Status](https://snap-ci.com/haciendaio/hacienda/branch/master/build_image)](https://snap-ci.com/haciendaio/hacienda/branch/master)
+### This repository is now archived! Thank you all who worked on it.
+
 # Hacienda
 Hacienda is a small RESTful service built to manage content and its translations stored as JSON
 
